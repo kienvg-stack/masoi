@@ -1,5 +1,5 @@
 // Game engine: rooms, phases, role abilities, bots. Pure logic — server.js owns HTTP, accounts and push transport.
-const { ROLES, randomAvatar } = require('./public/shared');
+const { ROLES, randomAvatar, checkSetup, SOLO_KILLERS } = require('./public/shared');
 
 const settings = { times: { night: 45, day: 60, vote: 30 }, disabled: [] }; // server.js overwrites from db
 const hooks = { push: () => {}, onEnd: () => {} };
@@ -65,8 +65,8 @@ function startNight(r) {
   setPhase(r, 'night', settings.times.night, endNight);
 }
 
-const HOW = { wolf: 'bị Ma sói cắn chết', sk: 'bị Sát nhân đâm chết', poison: 'bị đầu độc chết', fire: 'bị thiêu cháy', redlady: 'chết khi đi thăm nhầm nhà' };
-const DFX = { wolf: 'bite', sk: 'stab', poison: 'poisoned', fire: 'fire', redlady: 'bite' };
+const HOW = { wolf: 'bị Ma sói cắn chết', sk: 'bị Sát nhân đâm chết', poison: 'bị đầu độc chết', fire: 'bị thiêu cháy', redlady: 'chết khi đi thăm nhầm nhà', bomb: 'bị bom nổ chết', trap: 'dính bẫy của Thợ săn quái thú' };
+const DFX = { wolf: 'bite', sk: 'stab', poison: 'poisoned', fire: 'fire', redlady: 'bite', bomb: 'fire', trap: 'stab' };
 
 function endNight(r) {
   const a = r.act, by = k => a.list.filter(x => x.k === k);
@@ -93,29 +93,51 @@ function endNight(r) {
     priv(r, t2, `💘 Bạn và ${t1.name} đã trở thành tình nhân!`, { fx: 'link', av: t1.avatar });
   }
   for (const x of by('douse')) x.t.forEach(id => { P(r, id).doused = true; });
+  for (const x of by('trap')) P(r, x.by).trap = x.t[0];
 
+  // attacks carry who made them, so the Spirit Seer can tell killers apart
   const attacks = [];
   const wt = plurality(tally(a.wolf, v => P(r, v).role === 'alpha_werewolf' ? 2 : 1), true);
-  if (wt && !a.heal) attacks.push({ t: wt, by: 'wolf' });
-  by('stab').forEach(x => attacks.push({ t: x.t[0], by: 'sk' }));
-  by('poison').forEach(x => attacks.push({ t: x.t[0], by: 'poison' }));
-  if (by('ignite').length) r.players.filter(p => p.doused && p.alive).forEach(p => { p.doused = false; attacks.push({ t: p.id, by: 'fire' }); });
+  if (wt && !a.heal) attacks.push({ t: wt, by: 'wolf', who: Object.keys(a.wolf) });
+  by('stab').forEach(x => attacks.push({ t: x.t[0], by: 'sk', who: [x.by] }));
+  by('poison').forEach(x => attacks.push({ t: x.t[0], by: 'poison', who: [x.by] }));
+  if (by('ignite').length) r.players.filter(p => p.doused && p.alive).forEach(p => { p.doused = false; attacks.push({ t: p.id, by: 'fire', who: by('ignite').map(x => x.by) }); });
+  // bombs placed last night go off now, taking the seats on either side too
+  for (const b of (r.bombs || []).filter(b => b.night < r.day)) {
+    const i = r.players.findIndex(p => p.id === b.t);
+    [i - 1, i, i + 1].map(j => r.players[(j + r.players.length) % r.players.length]).filter(p => p.alive && p.id !== b.owner)
+      .forEach(p => attacks.push({ t: p.id, by: 'bomb', who: [b.owner] }));
+  }
+  r.bombs = (r.bombs || []).filter(b => b.night >= r.day).concat(by('bomb').map(x => ({ t: x.t[0], owner: x.by, night: r.day })));
 
   const protect = by('protect'), guards = Object.fromEntries(by('guard').map(x => [x.t[0], x.by]));
   const visiting = Object.fromEntries(by('visit').map(x => [x.by, x.t[0]]));
-  const deaths = [];
+  const deaths = [], killers = new Set();
   for (const atk of attacks) {
     let v = P(r, atk.t);
-    if (['wolf', 'sk'].includes(atk.by)) {
-      if (visiting[v.id]) continue; // red lady is not home
+    if (!v.alive) continue;
+    if (atk.by === 'wolf') {
+      const hunter = alive(r).find(h => h.role === 'beast_hunter' && h.trap === v.id);
+      if (hunter) {
+        hunter.trap = null;
+        const prey = alive(r).filter(w => team(w) === 'wolf'), victim = prey.find(w => w.role === 'werewolf') || rnd(prey);
+        if (victim) deaths.push([victim, 'trap']);
+        priv(r, hunter, '🪤 Bẫy của bạn đã sập! Bầy sói không cắn được ai.', { fx: 'protect' });
+        continue;
+      }
+    }
+    if (['wolf', 'sk', 'bomb'].includes(atk.by)) {
+      if (visiting[v.id] && atk.by !== 'bomb') continue; // red lady is not home
       if (atk.by === 'wolf' && v.role === 'serial_killer') continue;
       const doc = protect.filter(x => x.t[0] === v.id);
       if (doc.length) { doc.forEach(x => priv(r, P(r, x.by), `💉 Người bạn bảo vệ đã bị tấn công và được bạn cứu sống!`, { fx: 'protect' })); continue; }
       if (guards[v.id]) v = P(r, guards[v.id]);
       if (v.role === 'bodyguard' && !v.shieldUsed) { v.shieldUsed = true; priv(r, v, '🛡️ Bạn bị tấn công nhưng đã chống đỡ được! Lần sau sẽ không may mắn vậy.', { fx: 'guard' }); continue; }
       if (atk.by === 'wolf' && v.role === 'tough_guy' && !v.wounded) { v.wounded = r.day; priv(r, v, '💪 Bạn bị sói cắn nhưng vẫn gắng gượng... Bạn sẽ chết vào cuối ngày.'); continue; }
+      if (atk.by === 'wolf' && (v.role === 'cursed' || (a.convert && team(v) === 'village'))) { turnWolf(r, v); atk.who.forEach(id => killers.add(id)); continue; }
     }
     deaths.push([v, atk.by]);
+    atk.who.forEach(id => killers.add(id));
   }
   const attacked = attacks.filter(x => ['wolf', 'sk'].includes(x.by)).map(x => x.t);
   for (const [rl, t] of Object.entries(visiting)) {
@@ -123,6 +145,12 @@ function endNight(r) {
     if (team(host) === 'wolf' || host.role === 'serial_killer' || attacked.includes(t)) deaths.push([P(r, rl), 'redlady']);
   }
   const revived = by('revive').map(x => P(r, x.t[0])).filter(p => !p.alive);
+  for (const x of by('spirit')) {
+    const [t1, t2] = x.t.map(id => P(r, id)), yes = killers.has(t1.id) || killers.has(t2.id);
+    priv(r, P(r, x.by), `👁️ Trong ${t1.name} và ${t2.name}: ${yes ? 'CÓ người đã giết người đêm qua' : 'không ai giết người đêm qua'}`, { fx: 'see' });
+  }
+  r.muted = new Set(by('mute').map(x => x.t[0]).concat(by('glitch').map(x => x.t[0])));
+  r.glitched = new Set(by('glitch').map(x => x.t[0]));
 
   say(r, `☀️ Trời sáng${deaths.length ? '...' : '. Đêm qua không ai chết!'}`, 'sys', { fx: 'day' });
   deaths.forEach(([p, why]) => kill(r, p, HOW[why], DFX[why]));
@@ -131,10 +159,18 @@ function endNight(r) {
   next(r, startDay);
 }
 
+// cursed villagers and the Kitten Wolf's victim join the pack instead of dying
+function turnWolf(r, v) {
+  v.role = 'werewolf'; v.uses = {};
+  priv(r, v, '🐺 Bạn bị sói cắn nhưng không chết... Giờ bạn đã là Ma sói! Hãy đi cùng bầy sói.', { fx: 'kill', role: 'werewolf' });
+  alive(r).filter(w => team(w) === 'wolf' && w !== v).forEach(w => priv(r, w, `🐺 ${v.name} đã gia nhập bầy sói!`, { fx: 'kill', av: v.avatar }));
+}
+
 function startDay(r) {
-  r.flowers = new Set();
+  r.flowers = new Set(); r.wolfSafe = new Set(); r.noLynch = false;
   r.used = {};
   say(r, `Ngày ${r.day}: thảo luận xem ai là sói.`);
+  (r.muted || new Set()).forEach(id => { const p = P(r, id); if (p && p.alive) say(r, `🤐 ${p.name} bị cấm nói và không được bỏ phiếu hôm nay.`); });
   setPhase(r, 'day', settings.times.day, startVote);
 }
 
@@ -146,7 +182,9 @@ function startVote(r) {
 
 function endVote(r) {
   let t = plurality(tally(r.votes, v => { const p = P(r, v); return p.role === 'mayor' && p.revealed ? 2 : 1; }));
-  if (t && r.flowers.has(t)) { say(r, `🌸 ${P(r, t).name} được Bé hoa bảo vệ nên không bị treo cổ!`, 'sys', { fx: 'flower' }); t = null; }
+  if (r.noLynch) { say(r, '🕊️ Người hòa bình đã kêu gọi: hôm nay không treo cổ ai.'); t = null; }
+  else if (t && r.wolfSafe.has(t)) { say(r, `🛡️ ${P(r, t).name} được che chở nên không bị treo cổ!`, 'sys', { fx: 'guard' }); t = null; }
+  else if (t && r.flowers.has(t)) { say(r, `🌸 ${P(r, t).name} được Bé hoa bảo vệ nên không bị treo cổ!`, 'sys', { fx: 'flower' }); t = null; }
   else if (!t) say(r, '⚖️ Phiếu hòa hoặc không ai bị bầu. Không ai bị treo cổ.');
   if (t) {
     const p = P(r, t);
@@ -156,6 +194,8 @@ function endVote(r) {
     if (hh) return end(r, 'headhunter', [hh.id]);
   }
   alive(r).filter(p => p.wounded === r.day).forEach(p => kill(r, p, 'gục ngã vì vết thương', 'bite'));
+  alive(r).filter(p => r.glitched && r.glitched.has(p.id)).forEach(p => kill(r, p, 'bị Kẻ làm loạn xử lý', 'stab'));
+  r.muted = new Set(); r.glitched = new Set();
   next(r, startNight);
 }
 
@@ -166,6 +206,10 @@ function kill(r, p, how, fx) {
   say(r, `💀 ${p.name} ${how}. Vai trò: ${N(p.role)}`, 'sys', { fx, role: p.role, av: p.avatar });
   if (fx !== 'lynch') r.players.filter(h => h.alive && h.role === 'headhunter' && h.hhTarget === p.id)
     .forEach(h => { h.role = 'villager'; priv(r, h, '🎯 Mục tiêu của bạn đã chết. Bạn trở thành Dân làng.'); });
+  if (p.role === 'seer') {
+    const ap = alive(r).find(x => x.role === 'seer_apprentice');
+    if (ap) { ap.role = 'seer'; ap.uses = {}; priv(r, ap, '🔮 Tiên tri đã chết. Từ đêm nay bạn là Tiên tri mới!', { fx: 'see', role: 'seer' }); }
+  }
   if (p.lover) kill(r, P(r, p.lover), 'chết vì đau khổ khi người yêu ra đi', 'heartbreak');
   if (['avenger', 'junior_werewolf'].includes(p.role) && p.mark) kill(r, P(r, p.mark), `bị ${N(p.role)} kéo theo`, 'avenge');
   if (p.role === 'loudmouth' && p.mark) {
@@ -177,7 +221,7 @@ function kill(r, p, how, fx) {
 
 // -> [kind, winnerIds?] or null
 function winner(r) {
-  const a = alive(r), w = a.filter(p => team(p) === 'wolf').length, k = a.filter(p => ['serial_killer', 'arsonist'].includes(p.role));
+  const a = alive(r), w = a.filter(p => team(p) === 'wolf').length, k = a.filter(p => SOLO_KILLERS.includes(p.role));
   if (!a.length) return ['none', []];
   if (!w && !k.length) return ['village'];
   if (!k.length && w >= a.length - w) return ['wolf'];
@@ -190,7 +234,7 @@ function next(r, then) {
   w ? end(r, ...w) : then(r);
 }
 
-const WIN = { village: '🏡 Dân làng chiến thắng!', wolf: '🐺 Ma sói chiến thắng!', fool: '🃏 Thằng ngốc chiến thắng!', headhunter: '🎯 Thợ săn đầu người chiến thắng!', serial_killer: '🔪 Sát nhân hàng loạt chiến thắng!', arsonist: '🔥 Kẻ phóng hỏa chiến thắng!', none: '⚰️ Không ai sống sót...' };
+const WIN = { village: '🏡 Dân làng chiến thắng!', wolf: '🐺 Ma sói chiến thắng!', fool: '🃏 Thằng ngốc chiến thắng!', headhunter: '🎯 Thợ săn đầu người chiến thắng!', serial_killer: '🔪 Sát nhân hàng loạt chiến thắng!', arsonist: '🔥 Kẻ phóng hỏa chiến thắng!', bomber: '💣 Kẻ đánh bom chiến thắng!', corruptor: '📡 Kẻ làm loạn chiến thắng!', none: '⚰️ Không ai sống sót...' };
 function end(r, kind, ids) {
   r.winner = kind;
   r.players.forEach(p => { p.won = ids ? ids.includes(p.id) : team(p) === kind; });
@@ -211,9 +255,10 @@ function leave(uid) {
   if (!r.host) { clearTimeout(r.timer); delete rooms[r.code]; } else hooks.push(r);
 }
 
+const cap = r => r.setup ? r.setup.length : 16;
 function addPlayer(r, u) {
   if (r.phase !== 'lobby') throw 'Ván chơi đã bắt đầu';
-  if (r.players.length >= 16) throw 'Phòng đã đầy (16 người)';
+  if (r.players.length >= cap(r) && !P(r, u.id)) throw `Phòng đã đầy (${cap(r)} người)`;
   if (!P(r, u.id)) {
     if (userRoom[u.id] && userRoom[u.id] !== r.code) leave(u.id);
     r.players.push({ id: u.id, name: u.name, avatar: u.avatar, bot: !!u.bot, alive: true });
@@ -228,13 +273,20 @@ const BOT_NAMES = ['Lan', 'Minh', 'Hùng', 'Mai', 'Tuấn', 'Hoa', 'Nam', 'Linh'
 
 // u = { id, name, avatar } of the logged-in user (or a bot player)
 function handle(b, u) {
-  if (b.action === 'create' || (b.action === 'quick' && !Object.values(rooms).some(r => r.phase === 'lobby' && r.players.length < 16))) {
+  const open = r => r.phase === 'lobby' && r.players.length < cap(r);
+  if (b.action === 'create' || (b.action === 'quick' && !Object.values(rooms).some(open))) {
+    let setup = null;
+    if (b.action === 'create' && Array.isArray(b.setup) && b.setup.length) {
+      setup = b.setup.map(String);
+      const { errors } = checkSetup(setup);
+      if (errors.length) throw errors[0];
+    }
     let code;
     do code = Math.random().toString(36).slice(2, 6).toUpperCase(); while (rooms[code]);
-    rooms[code] = { code, players: [], host: null, phase: 'lobby', day: 0, msgs: [], clients: new Map(), blocked: new Set(), used: {}, touched: Date.now() };
+    rooms[code] = { code, setup, players: [], host: null, phase: 'lobby', day: 0, msgs: [], clients: new Map(), blocked: new Set(), used: {}, touched: Date.now() };
     return addPlayer(rooms[code], u);
   }
-  if (b.action === 'quick') return addPlayer(Object.values(rooms).find(r => r.phase === 'lobby' && r.players.length < 16), u);
+  if (b.action === 'quick') return addPlayer(Object.values(rooms).find(open), u);
   if (b.action === 'leave') return leave(u.id);
   const r = rooms[String(b.code || '').toUpperCase()];
   if (!r) throw 'Không tìm thấy phòng';
@@ -260,12 +312,13 @@ function handle(b, u) {
     if (!isHost) throw 'Chỉ chủ phòng được bắt đầu';
     if (!['lobby', 'end'].includes(r.phase)) throw 'Ván đang diễn ra';
     if (r.players.length < 4) throw 'Cần ít nhất 4 người (có thể thêm bot)';
-    const roles = dealRoles(r.players.length);
+    if (r.setup && r.players.length !== r.setup.length) throw `Phòng cần đủ ${r.setup.length} người để bắt đầu (đang có ${r.players.length})`;
+    const roles = r.setup ? shuffle([...r.setup]) : dealRoles(r.players.length);
     r.players.forEach((p, i) => {
-      for (const k of ['death', 'lover', 'mark', 'shieldUsed', 'wounded', 'revealed', 'hhTarget', 'doused', 'won']) delete p[k];
+      for (const k of ['death', 'lover', 'mark', 'shieldUsed', 'wounded', 'revealed', 'hhTarget', 'doused', 'won', 'trap']) delete p[k];
       Object.assign(p, { role: roles[i], alive: true, uses: Object.fromEntries((ROLES[roles[i]].ab || []).filter(a => a.uses).map(a => [a.k, a.uses])) });
     });
-    Object.assign(r, { day: 0, msgs: [], winner: null, blocked: new Set(), started: Date.now() });
+    Object.assign(r, { day: 0, msgs: [], winner: null, blocked: new Set(), bombs: [], muted: new Set(), glitched: new Set(), started: Date.now() });
     say(r, `🎭 Đã chia vai cho ${r.players.length} người. Trong làng có ${roles.filter(x => ROLES[x].t === 'wolf').length} Ma sói!`, 'sys', { fx: 'start' });
     for (const h of r.players.filter(p => p.role === 'headhunter')) {
       const t = rnd(r.players.filter(p => team(p) === 'village'));
@@ -280,14 +333,16 @@ function handle(b, u) {
     const ch = inGame && !me.alive ? 'dead'
       : r.phase === 'night' ? (team(me) === 'wolf' ? 'wolf' : me.role === 'medium' ? 'dead' : null) : 'day';
     if (!ch) throw 'Ban đêm làng im lặng, chỉ Ma sói được thì thầm';
+    if (ch === 'day' && inGame && r.muted && r.muted.has(me.id)) throw 'Hôm nay bạn bị cấm nói';
     return say(r, text, ch, { name: me.name, from: me.id });
   }
   if (b.action === 'vote') {
     const t = P(r, b.target);
     if (r.phase !== 'vote' || !me.alive) throw 'Chưa đến lúc bỏ phiếu';
+    if (r.muted && r.muted.has(me.id)) throw 'Hôm nay bạn không được bỏ phiếu';
     if (!t || !t.alive || t === me) throw 'Chọn người khác';
     r.votes[me.id] = t.id;
-    if (alive(r).every(p => r.votes[p.id])) { clearTimeout(r.timer); endVote(r); }
+    if (alive(r).every(p => r.votes[p.id] || (r.muted && r.muted.has(p.id)))) { clearTimeout(r.timer); endVote(r); }
     return;
   }
   if (b.action === 'pass') {
@@ -309,6 +364,7 @@ function act(r, me, b) {
     if (ab.dead ? t.alive || team(t) !== 'village' : !t.alive) throw ab.dead ? 'Chỉ hồi sinh được người phe dân đã chết' : `${t.name} đã chết`;
     if (t === me && !ab.self) throw 'Không thể chọn chính mình';
     if (ab.nw && team(t) === 'wolf') throw 'Không thể chọn đồng bọn sói';
+    if (ab.wo && team(t) !== 'wolf') throw 'Chỉ chọn được đồng bọn sói';
   }
   if (ab.k === 'heal' && !plurality(tally(r.act.wolf))) throw 'Sói chưa chọn ai để cứu';
   const t = ts[0];
@@ -338,6 +394,17 @@ function act(r, me, b) {
     case 'flower':
       r.flowers.add(t.id);
       return say(r, `🌸 Ai đó đã tặng hoa cho ${t.name}. Hôm nay họ không thể bị treo cổ.`, 'sys', { fx: 'flower', av: t.avatar });
+    case 'peace':
+      t.revealed = true; r.noLynch = true;
+      return say(r, `🕊️ Người hòa bình tiết lộ: ${t.name} là ${N(t.role)}. Hôm nay làng không treo cổ ai.`, 'sys', { fx: 'reveal', role: t.role, av: t.avatar });
+    case 'save':
+      r.wolfSafe.add(t.id);
+      priv(r, me, `🛡️ Bạn che chở ${t.name}, hôm nay không ai treo cổ được họ.`, { fx: 'guard', av: t.avatar });
+      return;
+    case 'convert':
+      r.act.convert = true;
+      alive(r).filter(w => team(w) === 'wolf').forEach(w => priv(r, w, '🐱 Mèo sói ra tay: đêm nay con mồi sẽ bị biến thành sói thay vì chết.', { fx: 'enchant' }));
+      return;
     case 'heal':
       r.act.heal = true;
       priv(r, me, '💚 Bạn đã dùng bình cứu cho nạn nhân của sói', { fx: 'heal' });
@@ -345,7 +412,8 @@ function act(r, me, b) {
     default: {
       const label = { see: '🔮 Bạn đang soi', aura: '🌈 Bạn xem hào quang của', protect: '💉 Bạn bảo vệ', guard: '🛡️ Bạn canh gác cho', poison: '☠️ Bạn đầu độc',
         compare: '🕵️ Bạn điều tra', revive: '✨ Bạn làm phép hồi sinh', link: '💘 Bạn ghép đôi', visit: '💃 Bạn ghé thăm', enchant: '🪄 Bạn yểm bùa',
-        nightmare: '😱 Bạn gieo ác mộng cho', stab: '🔪 Bạn nhắm đâm', douse: '⛽ Bạn tẩm xăng', ignite: '🔥 Bạn châm lửa thiêu tất cả người đã tẩm xăng' }[ab.k];
+        nightmare: '😱 Bạn gieo ác mộng cho', stab: '🔪 Bạn nhắm đâm', douse: '⛽ Bạn tẩm xăng', ignite: '🔥 Bạn châm lửa thiêu tất cả người đã tẩm xăng',
+        trap: '🪤 Bạn đặt bẫy cho', mute: '🤐 Ngày mai cấm nói:', spirit: '👁️ Bạn gọi hồn xem', bomb: '💣 Bạn gài bom vào', glitch: '📡 Bạn làm nhiễu' }[ab.k];
       r.act.list.push({ by: me.id, k: ab.k, t: ts.map(x => x.id) });
       priv(r, me, `${label}${ts.length ? ' ' + ts.map(x => x.name).join(' và ') : ''}`, { fx: ab.k, av: t && t.avatar });
     }
@@ -367,7 +435,8 @@ function botAct(r, p) {
   const others = alive(r).filter(x => x !== p), wolf = team(p) === 'wolf';
   const pick = (ab) => {
     let pool = ab.dead ? r.players.filter(x => !x.alive && team(x) === 'village') : ab.self ? alive(r) : others;
-    if (ab.nw || (wolf && ab.k !== 'see')) pool = pool.filter(x => team(x) !== 'wolf');
+    if (ab.wo) pool = alive(r).filter(x => team(x) === 'wolf');
+    else if (ab.nw || (wolf && ab.k !== 'see')) pool = pool.filter(x => team(x) !== 'wolf');
     return shuffle(pool.slice()).slice(0, ab.n).map(x => x.id);
   };
   try {
@@ -394,7 +463,8 @@ function view(r, uid) {
   const vis = m => m.ch === 'sys' || m.ch === 'day' || (m.ch === 'wolf' && wolfTeam) || (m.ch === 'dead' && (!me.alive || me.role === 'medium')) || m.to === uid;
   const wt = night && plurality(tally(r.act.wolf));
   return {
-    code: r.code, host: r.host, phase: r.phase, day: r.day, winner: r.winner, left: r.ends ? r.ends - Date.now() : 0,
+    code: r.code, host: r.host, phase: r.phase, day: r.day, winner: r.winner, left: r.ends ? r.ends - Date.now() : 0, setup: r.setup, cap: cap(r),
+    muted: !!(r.muted && r.muted.has(uid)),
     me: { id: me.id, role: me.role, alive: me.alive, lover: me.lover, mark: me.mark, hhTarget: me.hhTarget },
     abilities: (me.role && ROLES[me.role].ab || []).map(ab => ({ ...ab, left: ab.uses ? me.uses[ab.k] : null, ok: !over && usable(r, me, ab) })),
     canPass: night && required(r, me) && !r.act.done[uid],
@@ -407,6 +477,6 @@ function view(r, uid) {
 }
 
 const lobbies = () => Object.values(rooms).filter(r => r.phase === 'lobby')
-  .map(r => ({ code: r.code, host: (P(r, r.host) || {}).name, count: r.players.length }));
+  .map(r => ({ code: r.code, host: (P(r, r.host) || {}).name, count: r.players.length, cap: cap(r), custom: !!r.setup }));
 
 module.exports = { rooms, userRoom, settings, hooks, handle, view, lobbies, leave, dealRoles, WIN, end };

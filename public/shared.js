@@ -34,7 +34,61 @@ const ROLES = {
   arsonist:      { t: 'solo', n: 'Kẻ phóng hỏa', i: '🔥', d: 'Mỗi đêm tẩm xăng 2 người hoặc châm lửa thiêu chết tất cả người đã bị tẩm. Thắng khi là người cuối cùng.', ab: [{ k: 'douse', ph: 'night', n: 2, req: 1 }, { k: 'ignite', ph: 'night', n: 0, req: 1 }] },
 };
 
+Object.assign(ROLES, {
+  beast_hunter:  { t: 'village', n: 'Thợ săn quái thú', i: '🪤', d: 'Mỗi đêm đặt bẫy lên 1 người (kể cả mình). Nếu sói tấn công người đó, đòn cắn thất bại và 1 con sói dính bẫy chết.', ab: [{ k: 'trap', ph: 'night', n: 1, req: 1, self: 1 }] },
+  seer_apprentice: { t: 'village', n: 'Học việc tiên tri', i: '📖', d: 'Khi Tiên tri chết, bạn trở thành Tiên tri mới.' },
+  cursed:        { t: 'village', n: 'Kẻ bị nguyền', i: '🌑', d: 'Bạn là dân làng, nhưng nếu bị sói cắn bạn sẽ không chết mà biến thành Ma sói.' },
+  pacifist:      { t: 'village', n: 'Người hòa bình', i: '🕊️', d: 'Ban ngày công khai vai trò thật của 1 người, và hôm đó làng không treo cổ ai (1 lần).', ab: [{ k: 'peace', ph: 'day', n: 1, uses: 1 }] },
+  grumpy_grandma:{ t: 'village', n: 'Bà già khó tính', i: '👵', d: 'Mỗi đêm chọn 1 người: ngày hôm sau họ không được nói chuyện và không được bỏ phiếu.', ab: [{ k: 'mute', ph: 'night', n: 1, req: 1 }] },
+  spirit_seer:   { t: 'village', n: 'Thầy đồng linh hồn', i: '👁️‍🗨️', d: 'Mỗi đêm chọn 2 người. Sáng hôm sau biết được trong 2 người đó có ai đã giết người đêm qua không.', ab: [{ k: 'spirit', ph: 'night', n: 2, req: 1 }] },
+  guardian_wolf: { t: 'wolf', n: 'Sói hộ vệ', i: '🛡️', d: 'Ban ngày bảo vệ 1 con sói khỏi bị treo cổ hôm đó (1 lần).', ab: [{ k: 'kill', ph: 'night', n: 1, req: 1, nw: 1 }, { k: 'save', ph: 'day', n: 1, uses: 1, wo: 1, self: 1 }] },
+  kitten_wolf:   { t: 'wolf', n: 'Mèo sói', i: '🐱', d: 'Một lần duy nhất: đêm đó con mồi của bầy sói không chết mà bị biến thành Ma sói (nếu là phe dân).', ab: [{ k: 'kill', ph: 'night', n: 1, req: 1, nw: 1 }, { k: 'convert', ph: 'night', n: 0, uses: 1 }] },
+  bomber:        { t: 'solo', n: 'Kẻ đánh bom', i: '💣', d: 'Mỗi đêm gài bom vào 1 người. Đêm sau bom nổ, giết người đó và 2 người ngồi cạnh. Thắng khi là người cuối cùng.', ab: [{ k: 'bomb', ph: 'night', n: 1, req: 1 }] },
+  corruptor:     { t: 'solo', n: 'Kẻ làm loạn', i: '📡', d: 'Mỗi đêm làm nhiễu 1 người: ngày hôm sau họ không nói, không bỏ phiếu được và chết vào cuối ngày. Thắng khi là người cuối cùng.', ab: [{ k: 'glitch', ph: 'night', n: 1, req: 1 }] },
+});
+
+// ---- custom room setup rules (from the Wolvesville wiki's Custom Games and XP Balanced Game pages) ----
+const SOLO_KILLERS = ['serial_killer', 'arsonist', 'bomber', 'corruptor'];
+const CAT = {
+  inv: ['seer', 'aura_seer', 'detective', 'spirit_seer', 'seer_apprentice'],
+  vkill: ['gunner', 'priest', 'witch', 'beast_hunter', 'avenger'],
+  prot: ['doctor', 'bodyguard', 'tough_guy', 'witch'],
+  svote: ['fool', 'headhunter'],
+};
+const MAX = {
+  doctor: 1, bodyguard: 1, gunner: 1, priest: 1, seer: 1, seer_apprentice: 1, medium: 1, mayor: 1, witch: 1, beast_hunter: 1, avenger: 1,
+  loudmouth: 1, grumpy_grandma: 1, junior_werewolf: 1, cupid: 1, alpha_werewolf: 1, kitten_wolf: 1, red_lady: 1, cursed: 1, headhunter: 1, fool: 1,
+  tough_guy: 2, aura_seer: 2, spirit_seer: 2, detective: 2, pacifist: 2, flower_child: 2, nightmare_werewolf: 2, guardian_wolf: 2, wolf_seer: 2, wolf_shaman: 2,
+};
+const BANNED_BALANCED = ['kitten_wolf', 'red_lady', 'cursed'];
+// errors block the start; warnings only mean "unbalanced", like XP-unbalanced custom games
+function checkSetup(roles) {
+  const errors = [], warnings = [], n = roles.length, count = {};
+  roles.forEach(r => count[r] = (count[r] || 0) + 1);
+  const wolves = roles.filter(r => ROLES[r] && ROLES[r].t === 'wolf').length, of = list => roles.filter(r => list.includes(r)).length;
+  if (roles.some(r => !ROLES[r])) errors.push('Có vai không hợp lệ');
+  if (n < 4 || n > 16) errors.push(`Cần từ 4 đến 16 vai (đang có ${n})`);
+  if (!wolves) errors.push('Cần ít nhất 1 Ma sói');
+  if (wolves * 2 >= n && n) errors.push('Số sói phải ít hơn một nửa số người');
+  if (wolves + of(SOLO_KILLERS) >= n - 1 && n) errors.push('Cần ít nhất 2 người phe dân');
+  for (const [r, c] of Object.entries(count)) if (MAX[r] && c > MAX[r]) errors.push(`${ROLES[r].n}: tối đa ${MAX[r]}`);
+  if (count.seer_apprentice && !count.seer) errors.push('Học việc tiên tri cần có Tiên tri');
+  if (n >= 4 && n < 8) warnings.push('Nên có ít nhất 8 người');
+  const want = Math.max(1, Math.round(n / 4));
+  if (wolves !== want) warnings.push(`Nên có ${want} sói cho ${n} người`);
+  if (of(SOLO_KILLERS) > 1) warnings.push('Tối đa 1 sát nhân độc lập');
+  if (of(CAT.svote) > 1) warnings.push('Tối đa 1 vai độc lập kiểu bỏ phiếu');
+  if (of(CAT.inv) > 2) warnings.push('Tối đa 2 vai điều tra');
+  if (of(CAT.vkill) > 2) warnings.push('Tối đa 2 vai giết người phe dân');
+  if (of(CAT.prot) > 2) warnings.push('Tối đa 2 vai bảo vệ');
+  if ((count.villager || 0) > 3) warnings.push('Tối đa 3 Dân làng');
+  for (const r of BANNED_BALANCED) if (count[r]) warnings.push(`${ROLES[r].n} làm ván mất cân bằng`);
+  return { errors, warnings };
+}
+
 const ABIL = {
+  trap: ['Đặt bẫy', '🪤'], peace: ['Hòa bình', '🕊️'], mute: ['Cấm nói', '🤐'], spirit: ['Gọi hồn', '👁️'], save: ['Che chở sói', '🛡️'],
+  convert: ['Biến thành sói', '🐱'], bomb: ['Gài bom', '💣'], glitch: ['Làm nhiễu', '📡'],
   see: ['Soi', '🔮'], aura: ['Xem hào quang', '🌈'], protect: ['Bảo vệ', '💉'], guard: ['Canh gác', '🛡️'], heal: ['Bình cứu', '💚'],
   poison: ['Bình độc', '☠️'], mark: ['Chọn mục tiêu', '🎯'], shoot: ['Bắn', '🔫'], reveal: ['Công khai', '🎩'], compare: ['So sánh', '🕵️'],
   water: ['Nước thánh', '💧'], revive: ['Hồi sinh', '✨'], link: ['Ghép đôi', '💘'], visit: ['Ghé thăm', '💃'], flower: ['Tặng hoa', '🌸'],
@@ -49,7 +103,7 @@ const torso = c => F('M38 136 Q36 100 60 95 Q84 100 82 136Z', c);
 const arms = c => S('M43 103 Q31 111 31 126', c, 11) + S('M77 103 Q89 111 89 126', c, 11);
 const shirt = (c, s = c, more = '') => arms(s) + torso(c) + more;
 
-const SKIN = { s1: '#f8dcc4', s2: '#f1c6a0', s3: '#dca77c', s4: '#b77d52', s5: '#8a5634', s6: '#5e3a22', zombie: '#a9d39b', ghost: '#cfd3f7' };
+const SKIN = { s1: '#f8dcc4', s2: '#f1c6a0', s3: '#dca77c', s4: '#b77d52', s5: '#8a5634', s6: '#5e3a22', zombie: '#a9d39b', ghost: '#cfd3f7', wolf: '#9aa0ad' };
 const HAIRC = { black: '#2a2328', brown: '#6b3e1f', blonde: '#e8c26a', red: '#c4462e', white: '#e9e6ef', pink: '#f08fb8', blue: '#4f7fe0', green: '#4fae6a', purple: '#8e5bd6', silver: '#a7acbd' };
 
 const HAIR = {
@@ -259,6 +313,7 @@ Object.assign(GLASSES, {
   aviator: { n: 'Kính phi công', f: () => F('M38 56 L57 56 Q57 70 47 70 Q38 70 38 56Z M63 56 L82 56 Q82 70 73 70 Q63 70 63 56Z', 'rgba(60,40,20,.75)', 'stroke="#c9a227" stroke-width="1.6"') + S('M57 58 Q60 55 63 58', '#c9a227', 1.6) },
 });
 Object.assign(MASK, {
+  snout: { n: 'Mõm sói', f: () => F('M44 66 Q60 58 76 66 Q78 82 60 88 Q42 82 44 66Z', '#dcdfe6') + `<ellipse cx="60" cy="68" rx="6" ry="4.2" fill="#1b1b22"/>` + S('M60 72 L60 77 M54 79 Q60 83 66 79', '#1b1b22', 1.8) + F('M55 79.5 L56.5 85 L58 80.5Z M65 79.5 L63.5 85 L62 80.5Z', '#fff') },
   clownnose: { n: 'Mũi chú hề', f: () => `<circle cx="60" cy="68" r="6" fill="#e5392f"/><circle cx="58" cy="66" r="1.8" fill="#ff9a9a"/>` },
   bandana: { n: 'Khăn bandana', f: () => F('M30 68 Q60 64 90 68 Q88 92 60 96 Q32 92 30 68Z', '#d7192f') + dots([[42, 76], [60, 84], [78, 76], [52, 90], [70, 90]], 1.8, '#fff') },
   freckles: { n: 'Tàn nhang', f: () => dots([[38, 70], [42, 73], [36, 74], [82, 70], [78, 73], [84, 74]], 1.2, '#b57a4e') },
@@ -399,6 +454,67 @@ function itemSvg(slot, key) {
   return avatarSvg(a);
 }
 
-const AV = { TEAM, ROLES, ABIL, ITEMS, SLOTS, SETS, DEFAULT_AVATAR, cleanAvatar, randomAvatar, avatarSvg, graveSvg, itemSvg };
+// ---- role portraits: a character in the role's costume, framed close on the face, die-cut sticker style ----
+Object.assign(HAT, {
+  hood: { n: 'Mũ trùm', b: () => '', f: () => F('M20 70 Q16 14 60 10 Q104 14 100 70 Q96 40 82 30 Q60 22 38 30 Q24 40 20 70Z', '#5b3fa0') + S('M30 52 Q40 26 60 22 Q80 26 90 52', '#7b5cc8', 2) },
+});
+Object.assign(FG, {
+  crystalball: { n: 'Quả cầu pha lê', f: () => `<ellipse cx="88" cy="136" rx="13" ry="4" fill="#8a5a2e"/><circle cx="88" cy="120" r="13" fill="#8fd3ff" opacity=".9"/><circle cx="84" cy="115" r="4" fill="#fff" opacity=".8"/><circle cx="88" cy="120" r="18" fill="#b48cff" opacity=".25"/>` },
+  syringe: { n: 'Ống tiêm', f: () => `<rect x="84" y="96" width="10" height="30" rx="2" fill="#e6f4ff" stroke="#9aa5b4" stroke-width="1.5" transform="rotate(20 89 111)"/><rect x="85" y="104" width="8" height="12" fill="#5ad1a0" transform="rotate(20 89 111)"/>` + S('M95 92 L100 80', '#9aa5b4', 2) },
+  magnifier: { n: 'Kính lúp', f: () => S('M88 128 L98 110', '#6b4423', 4) + `<circle cx="102" cy="102" r="10" fill="rgba(200,230,255,.5)" stroke="#c9a227" stroke-width="3"/>` },
+  megaphone: { n: 'Loa', f: () => F('M84 112 L106 100 L106 128 L84 120Z', '#e5394d') + `<rect x="78" y="112" width="8" height="10" rx="2" fill="#2a2a32"/>` + S('M110 106 Q116 114 110 122', '#f6c21b', 2) },
+  holywater: { n: 'Nước thánh', f: () => F('M82 108 L96 108 L98 132 L80 132Z', '#bfe6ff', 'stroke="#7ab6dd" stroke-width="1.5"') + `<rect x="85" y="100" width="8" height="8" fill="#c9b7a0"/>` + F('M87 116 L91 116 L91 128 L87 128Z M84 120 L94 120 L94 124 L84 124Z', '#f6c21b') },
+  beartrap: { n: 'Bẫy thú', f: () => `<ellipse cx="90" cy="130" rx="16" ry="6" fill="#6b6f7a"/>` + [76, 82, 88, 94, 100].map(x => F(`M${x} 128 L${x + 3} 118 L${x + 6} 128Z`, '#c9ced8')).join('') },
+  knife: { n: 'Dao', f: () => F('M88 128 L92 128 L94 100 L90 92 L86 100Z', '#dfe6ee', 'stroke="#9aa5b4" stroke-width="1"') + `<rect x="85" y="126" width="10" height="12" rx="2" fill="#2a2a32"/>` },
+  bomb: { n: 'Bom', f: () => `<circle cx="90" cy="120" r="12" fill="#2a2a32"/><circle cx="86" cy="116" r="3" fill="#5d6577"/>` + S('M96 110 Q100 100 106 102', '#8a5a2e', 2) + F('M106 96 l2 4 4 1 -3 3 1 4 -4 -2 -4 2 1 -4 -3 -3 4 -1Z', '#ffb020') },
+  pistol: { n: 'Súng', f: () => F('M80 112 L108 112 L108 119 L92 119 L90 130 L82 130 L84 119 L80 119Z', '#2a2a32') + `<rect x="104" y="109" width="3" height="3" fill="#2a2a32"/>` },
+});
+const ROLE_LOOK = {
+  villager: { hat: 'strawhat', shirt: 'overalls', fg: 'pitchfork', eyes: 'happy', hair: 'short' },
+  seer: { hat: 'hood', shirt: 'wizard_robe', fg: 'crystalball', eyes: 'sparkle', hair: 'long', hairColor: 'purple' },
+  aura_seer: { hat: 'halo', shirt: 'angel_robe', fg: 'crystalball', bg: 'rainbow', eyes: 'big', hair: 'wavy', hairColor: 'blonde' },
+  doctor: { shirt: 'labcoat', fg: 'syringe', glasses: 'round', mask: 'medical', hair: 'sidepart' },
+  bodyguard: { hat: 'helmet', shirt: 'armor', fg: 'shield', eyes: 'angry', mouth: 'flat' },
+  witch: { hat: 'witch', shirt: 'witch_dress', fg: 'potion', hair: 'long', hairColor: 'purple', mouth: 'smirk', bg: 'moon' },
+  avenger: { hat: 'headband', shirt: 'ninja', fg: 'sword', eyes: 'angry', mouth: 'flat' },
+  gunner: { hat: 'cowboy', shirt: 'detective', fg: 'pistol', eyes: 'angry', mask: 'mustache' },
+  mayor: { hat: 'tophat', shirt: 'suit', glasses: 'monocle', mask: 'mustache', mouth: 'smirk' },
+  detective: { hat: 'deerstalker', shirt: 'detective', fg: 'magnifier', glasses: 'monocle' },
+  priest: { shirt: 'priest', fg: 'holywater', hair: 'none', eyes: 'closed', mouth: 'smile' },
+  medium: { hat: 'hood', shirt: 'witch_dress', fg: 'lantern', bg: 'sparkles', eyes: 'closed' },
+  cupid: { shirt: 'angel_robe', bg: 'angel_wings', fg: 'bouquet', hair: 'curly', hairColor: 'blonde', mouth: 'kiss', eyes: 'heart' },
+  tough_guy: { shirt: 'robe', fg: 'gloves', mask: 'beard', eyes: 'angry', hair: 'mohawk' },
+  red_lady: { shirt: 'aodai', hair: 'long', hairColor: 'red', mouth: 'kiss', bg: 'hearts', eyes: 'wink' },
+  loudmouth: { shirt: 'cheer', fg: 'megaphone', mouth: 'open', hair: 'spiky', hairColor: 'blue' },
+  flower_child: { hat: 'flowers', shirt: 'sailor', fg: 'bouquet', eyes: 'big', hair: 'twintails', hairColor: 'pink' },
+  beast_hunter: { hat: 'cowboy', shirt: 'army', fg: 'beartrap', mask: 'beard', eyes: 'angry' },
+  seer_apprentice: { hat: 'hood', shirt: 'sailor', fg: 'book', eyes: 'big', hair: 'bob' },
+  cursed: { shirt: 'hoodie', eyes: 'wolf', skin: 'ghost', mouth: 'flat', hair: 'spiky', hairColor: 'black' },
+  pacifist: { hat: 'flowers', shirt: 'angel_robe', fg: 'bouquet', bg: 'rainbow', eyes: 'closed', mouth: 'smile' },
+  grumpy_grandma: { hair: 'bun', hairColor: 'white', glasses: 'round', shirt: 'sweater', mouth: 'flat', eyes: 'angry' },
+  spirit_seer: { hat: 'hood', shirt: 'angel_robe', fg: 'lantern', bg: 'sparkles', eyes: 'sparkle', skin: 'ghost' },
+  werewolf: { skin: 'wolf', mask: 'snout', hat: 'wolf_ears', eyes: 'wolf', mouth: 'fangs', shirt: 'hoodie', hair: 'spiky', hairColor: 'silver', bg: 'moon' },
+  alpha_werewolf: { skin: 'wolf', mask: 'snout', hat: 'crown', eyes: 'wolf', mouth: 'fangs', shirt: 'vampire', hair: 'spiky', hairColor: 'black', bg: 'moon' },
+  wolf_seer: { skin: 'wolf', mask: 'snout', hat: 'wolf_ears', eyes: 'wolf', mouth: 'fangs', shirt: 'wizard_robe', fg: 'crystalball', hairColor: 'silver' },
+  junior_werewolf: { skin: 'wolf', mask: 'snout', hat: 'wolf_ears', eyes: 'big', mouth: 'fangs', shirt: 'tee_red', fg: 'teddy', hair: 'short', hairColor: 'silver' },
+  wolf_shaman: { skin: 'wolf', mask: 'snout', hat: 'wizard', eyes: 'wolf', mouth: 'fangs', shirt: 'wizard_robe', fg: 'wand' },
+  nightmare_werewolf: { skin: 'wolf', mask: 'snout', hat: 'wolf_ears', eyes: 'wolf', mouth: 'fangs', shirt: 'ninja', bg: 'bat_wings', hairColor: 'black' },
+  guardian_wolf: { skin: 'wolf', mask: 'snout', hat: 'helmet', eyes: 'wolf', mouth: 'fangs', shirt: 'armor', fg: 'shield' },
+  kitten_wolf: { skin: 'wolf', mask: 'snout', hat: 'cat_ears', eyes: 'wolf', mouth: 'cat', shirt: 'hoodie', hair: 'bob', hairColor: 'black' },
+  fool: { hat: 'clownwig', shirt: 'clown', mask: 'clownnose', mouth: 'grin', fg: 'balloon' },
+  headhunter: { hat: 'tophat', shirt: 'suit', fg: 'pistol', glasses: 'sunglasses', mouth: 'smirk' },
+  serial_killer: { shirt: 'leather', fg: 'knife', mask: 'ninja', eyes: 'angry', hair: 'short', hairColor: 'black' },
+  arsonist: { glasses: 'goggles', shirt: 'leather', fg: 'torch', bg: 'flames', mouth: 'grin', hair: 'spiky', hairColor: 'red' },
+  bomber: { glasses: 'goggles', shirt: 'army', fg: 'bomb', mouth: 'grin', hat: 'armyhelmet' },
+  corruptor: { shirt: 'cyber', glasses: 'visor', hat: 'headphones', hair: 'spiky', hairColor: 'green', mouth: 'smirk', bg: 'sparkles' },
+};
+// close-up portrait: crop to the head and props, wrap in a white die-cut edge
+function roleArt(role, cls = '') {
+  const look = { ...DEFAULT_AVATAR, skin: 's2', hairColor: 'brown', mouth: 'smile', ...(ROLE_LOOK[role] || {}) };
+  const inner = avatarSvg(look).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
+  return `<svg class="role-art ${cls}" viewBox="-4 -16 128 128" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;
+}
+
+const AV = { TEAM, ROLES, ABIL, ITEMS, SLOTS, SETS, DEFAULT_AVATAR, cleanAvatar, randomAvatar, avatarSvg, graveSvg, itemSvg, roleArt, ROLE_LOOK, checkSetup, SOLO_KILLERS };
 if (typeof module !== 'undefined' && module.exports) module.exports = AV; else root.AV = AV;
 })(this);

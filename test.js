@@ -26,7 +26,7 @@ function setup(roles) {
   for (let k = 4; k <= 16; k++) {
     const roles = game.dealRoles(k);
     assert.equal(roles.length, k);
-    assert.equal(roles.filter(x => ['werewolf', 'alpha_werewolf', 'wolf_seer', 'junior_werewolf', 'wolf_shaman', 'nightmare_werewolf'].includes(x)).length, Math.floor(k / 4));
+    assert.equal(roles.filter(x => ROLES[x].t === 'wolf').length, Math.floor(k / 4));
   }
 
   // wolf kills villager, seer learns wolf role, then lynch the wolf -> village wins
@@ -94,6 +94,63 @@ function setup(roles) {
     assert.throws(() => adminApi({ action: 'login', name: 'Kien', password: 'secret123' }, '', 'ip1'), /admin/);
     assert.throws(() => adminApi({ action: 'overview' }, reg.token, 'ip1'), e => e.auth);
     assert(!Object.values(db.users).find(u => u.name === 'Kien').hash.includes('secret'));
+  }
+  // beast hunter's trap stops the bite and kills a wolf
+  {
+    const { r, act, dead } = setup(['werewolf', 'beast_hunter', 'villager', 'villager', 'villager', 'werewolf', 'villager', 'villager']);
+    act(1, 'trap', 2); act(0, 'kill', 2); act(5, 'kill', 2);
+    assert(!dead(2) && r.players.filter(p => !p.alive && ROLES[p.role].t === 'wolf').length === 1);
+  }
+  // cursed turns into a wolf instead of dying; seer apprentice inherits the seer
+  {
+    const { r, act, dead } = setup(['werewolf', 'cursed', 'seer', 'seer_apprentice', 'villager', 'villager', 'villager', 'villager']);
+    act(0, 'kill', 1); act(2, 'see', 0);
+    assert(!dead(1) && r.players[1].role === 'werewolf');
+  }
+  {
+    const { r, act } = setup(['werewolf', 'seer', 'seer_apprentice', 'villager', 'villager', 'villager', 'villager', 'villager']);
+    act(0, 'kill', 1); act(1, 'see', 0);
+    assert(!r.players[1].alive && r.players[2].role === 'seer');
+  }
+  // pacifist cancels the lynch; grumpy grandma mutes a voter
+  {
+    const { r, act, vote } = setup(['werewolf', 'pacifist', 'grumpy_grandma', 'villager', 'villager', 'villager', 'villager', 'villager']);
+    act(0, 'kill', 7); act(2, 'mute', 3);
+    await sleep(100);
+    assert.throws(() => vote(3, 0), /không được bỏ phiếu/);
+    act(1, 'peace', 0);
+    [1, 2, 4, 5, 6].forEach(i => vote(i, 0)); vote(0, 1);
+    assert(r.players[0].alive && r.players[0].revealed);
+  }
+  // bomb goes off the night after, hitting the neighbours
+  {
+    const { r, act, dead } = setup(['werewolf', 'villager', 'villager', 'bomber', 'villager', 'villager', 'villager', 'villager']);
+    act(3, 'bomb', 5); act(0, 'kill', 1);
+    assert(!dead(5) && dead(1));
+    await sleep(100);
+    // everyone votes a different person: tie, nobody lynched, night 2 begins
+    const live = r.players.filter(p => p.alive);
+    live.forEach((p, i) => game.handle({ action: 'vote', code: r.code, target: live[(i + 1) % live.length].id }, p));
+    if (r.phase === 'vote') { clearTimeout(r.timer); }
+    assert.equal(r.phase, 'night');
+    act(0, 'kill', 2); act(3, 'bomb', 7);
+    assert(dead(4) && dead(5) && dead(6) && !dead(3));
+  }
+  // custom room: setup rules and capacity
+  {
+    const { checkSetup } = require('./public/shared');
+    assert(checkSetup(['werewolf', 'werewolf', 'seer', 'villager']).errors.length);
+    assert(checkSetup(['villager', 'seer', 'doctor', 'villager']).errors.some(e => /Ma sói/.test(e)));
+    assert(checkSetup(['werewolf', 'seer', 'seer', 'villager', 'villager']).errors.some(e => /tối đa 1/.test(e)));
+    assert.deepEqual(checkSetup(['werewolf', 'werewolf', 'seer', 'doctor', 'villager', 'villager', 'fool', 'bodyguard']).errors, []);
+    const host = { id: 'h1', name: 'H', avatar: {} };
+    assert.throws(() => game.handle({ action: 'create', setup: ['werewolf', 'werewolf', 'villager', 'villager'] }, host));
+    const { code } = game.handle({ action: 'create', setup: ['werewolf', 'seer', 'villager', 'villager'] }, host);
+    const room = game.rooms[code];
+    for (let i = 0; i < 3; i++) game.handle({ action: 'addbot', code }, host);
+    assert.throws(() => game.handle({ action: 'addbot', code }, host), /đầy/);
+    game.handle({ action: 'start', code }, host);
+    assert.deepEqual(room.players.map(p => p.role).sort(), ['seer', 'villager', 'villager', 'werewolf']);
   }
   console.log('all checks passed');
   process.exit(0);
