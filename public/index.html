@@ -230,7 +230,7 @@ body.night #chatForm input { background: #1a1e27; color: #eef0f4; border-color: 
 @keyframes pop { from { transform: scale(.4); opacity: 0; } }
 #fx .card svg.avatar { width: 100%; filter: drop-shadow(0 16px 24px rgba(0,0,0,.35)); }
 #fx .card > .rg { font-size: 80px; width: 1.6em; height: 1.6em; margin: 24px auto; border-radius: 28px; }
-#fx .cap { display: inline-block; margin-top: 8px; background: var(--white); color: var(--ink); border-radius: 12px; padding: 8px 14px; font: 700 16px/1.4 'Be Vietnam Pro', sans-serif; box-shadow: 0 6px 16px rgba(0,0,0,.25); max-width: 92vw; }
+#fx .cap { display: inline-block; text-wrap: balance; margin-top: 8px; background: var(--white); color: var(--ink); border-radius: 12px; padding: 8px 14px; font: 700 16px/1.4 'Be Vietnam Pro', sans-serif; box-shadow: 0 6px 16px rgba(0,0,0,.25); max-width: 92vw; }
 #fx .drop { background: var(--white); color: var(--pink); border-radius: 16px; padding: 14px 28px; font: 800 clamp(34px, 7vw, 64px)/1.3 var(--display); display: flex; align-items: center; gap: 16px; box-shadow: 0 12px 30px rgba(0,0,0,.3); animation: drop .55s var(--ease) both; }
 #fx .drop.dark { background: #12151c; color: #ffd84d; }
 @keyframes drop { from { transform: translateY(-50vh); } }
@@ -285,6 +285,8 @@ body.night #chatForm input { background: #1a1e27; color: #eef0f4; border-color: 
   .top { padding-top: 10px; } .top h1 { font-size: 22px; } .top .sub { font-size: 13.5px; }
   .tile .nm { font-size: 14.5px; top: 6px; } .tile .say { font-size: 13px; top: 28px; }
   .thread { font-size: 15px; }
+  /* rows stretch to the full column height so the board meets the composer line */
+  .board { aspect-ratio: auto; height: 100%; grid-auto-rows: auto; grid-template-rows: repeat(var(--rows, 4), 1fr); align-content: stretch; }
 }
 @media (max-width: 900px) {
   #auth { grid-template-columns: 1fr; align-items: start; }
