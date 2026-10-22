@@ -220,6 +220,10 @@ svg.role-art { filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop
 .tile .rg { position: absolute; z-index: 2; right: 4px; bottom: 4px; font-size: 11px; width: 22px; height: 22px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,.35); }
 .tile .tags { position: absolute; z-index: 2; left: 4px; bottom: 4px; display: flex; gap: 2px; }
 .tile .tags i { background: var(--white); color: var(--pink); border-radius: 6px; width: 22px; height: 22px; display: grid; place-items: center; font-size: 13px; }
+.tile .tags i.pick { background: var(--pink); color: var(--white); }
+.tile .tags i.cmp { width: auto; padding: 0 5px; font: 800 12px/22px var(--font, inherit); font-style: normal; }
+.tile .tags i.cmp.same { background: var(--mint); color: var(--white); } .tile .tags i.cmp.diff { background: var(--red); color: var(--white); }
+.tile .tags i.spirit.yes { background: var(--red); color: var(--white); } .tile .tags i.spirit.no { background: var(--mint); color: var(--white); }
 .tile .tags i.douse { background: var(--orange); color: var(--white); }
 .tile .tags i.bomb { background: #2b2f3a; color: var(--orange); }
 .tile .tags i.aura-good { background: var(--mint); color: var(--white); } .tile .tags i.aura-evil { background: var(--red); color: var(--white); } .tile .tags i.aura-unknown { background: var(--orange); color: var(--white); }
@@ -710,6 +714,9 @@ function tileParts(p, i) {
   const nt = p.alive ? S.me.notes?.[p.id] || {} : {};
   const tags = [p.id === S.me.lover || (S.me.lover && p.id === S.me.id) || nt.lover ? ic('heart') : '', p.id === S.me.mark || p.id === S.me.hhTarget ? ic('target') : '',
     nt.douse ? `<i class="ph-bold ph-gas-can douse" title="Đã tẩm xăng"></i>` : '', nt.bomb ? `<i class="ph-bold ph-bomb bomb" title="Đã gài bom"></i>` : '',
+    ...(S.me.tonight?.[p.id] || []).filter(k => !['douse', 'bomb', 'link'].includes(k)).map(k => `<i class="ph-bold ph-${AG[k]} pick" title="Đêm nay: ${ABIL[k][0]}"></i>`),
+    nt.cmp ? `<i class="cmp ${nt.cmp.same ? 'same' : 'diff'}" title="${nt.cmp.same ? 'Cùng phe' : 'Khác phe'} với số ${seatNo(nt.cmp.with)}">${nt.cmp.same ? '=' : '≠'}${seatNo(nt.cmp.with)}</i>` : '',
+    nt.spirit ? `<i class="ph-bold ph-ghost spirit ${nt.spirit.yes ? 'yes' : 'no'}" title="Cặp với số ${seatNo(nt.spirit.with)}: ${nt.spirit.yes ? 'có kẻ đã giết người' : 'không ai giết người'}"></i>` : '',
     nt.aura ? `<i class="ph-bold ${{ good: 'ph-sun aura-good', evil: 'ph-skull aura-evil', unknown: 'ph-question aura-unknown' }[nt.aura]}" title="Hào quang: ${{ good: 'Tốt', evil: 'Ác', unknown: 'Không rõ' }[nt.aura]}"></i>` : ''].join('');
   const kickable = S.phase === 'lobby' && S.host === S.me.id && p.id !== S.me.id;
   const say = says[p.id] && says[p.id].until > Date.now() ? `<div class="say"><span>${esc(says[p.id].t)}</span></div>` : '';

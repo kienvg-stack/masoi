@@ -89,6 +89,7 @@ function endNight(r) {
   for (const x of by('compare')) {
     const [t1, t2] = x.t.map(id => P(r, id)), same = looksTeam(t1) === looksTeam(t2) && looksTeam(t1) !== 'solo';
     priv(r, P(r, x.by), `🕵️ ${t1.name} và ${t2.name} ${same ? 'CÙNG PHE' : 'KHÁC PHE'}`, { fx: 'compare' });
+    note(P(r, x.by), t1, 'cmp', { same, with: t2.id }); note(P(r, x.by), t2, 'cmp', { same, with: t1.id });
   }
   for (const x of by('link')) {
     const [t1, t2] = x.t.map(id => P(r, id));
@@ -106,9 +107,11 @@ function endNight(r) {
   if (wt && !a.heal) attacks.push({ t: wt, by: 'wolf', who: Object.keys(a.wolf) });
   by('stab').forEach(x => attacks.push({ t: x.t[0], by: 'sk', who: [x.by] }));
   by('poison').forEach(x => attacks.push({ t: x.t[0], by: 'poison', who: [x.by] }));
+  by('ignite').forEach(x => Object.values(P(r, x.by).notes || {}).forEach(n => delete n.douse));
   if (by('ignite').length) r.players.filter(p => p.doused && p.alive).forEach(p => { p.doused = false; attacks.push({ t: p.id, by: 'fire', who: by('ignite').map(x => x.by) }); });
   // bombs placed last night go off now, taking the seats on either side too
   for (const b of (r.bombs || []).filter(b => b.night < r.day)) {
+    delete ((P(r, b.owner).notes || {})[b.t] || {}).bomb;
     const i = r.players.findIndex(p => p.id === b.t);
     [i - 1, i, i + 1].map(j => r.players[(j + r.players.length) % r.players.length]).filter(p => p.alive && p.id !== b.owner)
       .forEach(p => attacks.push({ t: p.id, by: 'bomb', who: [b.owner] }));
@@ -154,6 +157,7 @@ function endNight(r) {
   for (const x of by('spirit')) {
     const [t1, t2] = x.t.map(id => P(r, id)), yes = killers.has(t1.id) || killers.has(t2.id);
     priv(r, P(r, x.by), `👁️ Trong ${t1.name} và ${t2.name}: ${yes ? 'CÓ người đã giết người đêm qua' : 'không ai giết người đêm qua'}`, { fx: 'see' });
+    note(P(r, x.by), t1, 'spirit', { yes, with: t2.id }); note(P(r, x.by), t2, 'spirit', { yes, with: t1.id });
   }
   r.muted = new Set(by('mute').map(x => x.t[0]).concat(by('glitch').map(x => x.t[0])));
   r.glitched = new Set(by('glitch').map(x => x.t[0]));
@@ -421,6 +425,7 @@ function act(r, me, b) {
         nightmare: '😱 Bạn gieo ác mộng cho', stab: '🔪 Bạn nhắm đâm', douse: '⛽ Bạn tẩm xăng', ignite: '🔥 Bạn châm lửa thiêu tất cả người đã tẩm xăng',
         trap: '🪤 Bạn đặt bẫy cho', mute: '🤐 Ngày mai cấm nói:', spirit: '👁️ Bạn gọi hồn xem', bomb: '💣 Bạn gài bom vào', glitch: '📡 Bạn làm nhiễu' }[ab.k];
       r.act.list.push({ by: me.id, k: ab.k, t: ts.map(x => x.id) });
+      if (['douse', 'bomb', 'link'].includes(ab.k)) ts.forEach(x => note(me, x, ab.k === 'link' ? 'lover' : ab.k));
       priv(r, me, `${label}${ts.length ? ' ' + ts.map(x => x.name).join(' và ') : ''}`, { fx: ab.k, av: t && t.avatar });
     }
   }
@@ -471,7 +476,8 @@ function view(r, uid) {
   return {
     code: r.code, host: r.host, phase: r.phase, day: r.day, winner: r.winner, left: r.ends ? r.ends - Date.now() : 0, setup: r.setup, cap: cap(r),
     muted: !!(r.muted && r.muted.has(uid)),
-    me: { id: me.id, role: me.role, alive: me.alive, lover: me.lover, mark: me.mark, hhTarget: me.hhTarget, notes: me.notes || {} },
+    me: { id: me.id, role: me.role, alive: me.alive, lover: me.lover, mark: me.mark, hhTarget: me.hhTarget, notes: me.notes || {},
+      tonight: night ? r.act.list.filter(x => x.by === uid).reduce((m, x) => (x.t.forEach(t => (m[t] = m[t] || []).push(x.k)), m), {}) : {} },
     abilities: (me.role && ROLES[me.role].ab || []).map(ab => ({ ...ab, left: ab.uses ? me.uses[ab.k] : null, ok: !over && usable(r, me, ab) })),
     canPass: night && required(r, me) && !r.act.done[uid],
     blocked: night && r.blocked.has(uid),

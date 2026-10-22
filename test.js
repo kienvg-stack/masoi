@@ -162,6 +162,15 @@ function setup(roles) {
     assert(v(2)[r.players[3].id].douse && v(2)[r.players[4].id].douse);
     assert.deepEqual(v(3), {});
   }
+  // picks show at once: bomber sees the bomb before night ends, doctor sees tonight's patient
+  {
+    const { r, act } = setup(['werewolf', 'bomber', 'doctor', 'villager', 'villager', 'villager', 'villager', 'villager']);
+    act(1, 'bomb', 4); act(2, 'protect', 5);
+    const me = i => game.view(r, r.players[i].id).me;
+    assert.equal(r.phase, 'night');
+    assert(me(1).notes[r.players[4].id].bomb);
+    assert.deepEqual(me(2).tonight[r.players[5].id], ['protect']);
+  }
   console.log('all checks passed');
   process.exit(0);
 })().catch(e => { console.error(e); process.exit(1); });
