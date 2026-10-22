@@ -220,6 +220,10 @@ svg.role-art { filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop
 .tile .rg { position: absolute; z-index: 2; right: 4px; bottom: 4px; font-size: 11px; width: 22px; height: 22px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,.35); }
 .tile .tags { position: absolute; z-index: 2; left: 4px; bottom: 4px; display: flex; gap: 2px; }
 .tile .tags i { background: var(--white); color: var(--pink); border-radius: 6px; width: 22px; height: 22px; display: grid; place-items: center; font-size: 13px; }
+.tile .tags i.douse { background: var(--orange); color: var(--white); }
+.tile .tags i.bomb { background: #2b2f3a; color: var(--orange); }
+.tile .tags i.aura-good { background: var(--mint); color: var(--white); } .tile .tags i.aura-evil { background: var(--red); color: var(--white); } .tile .tags i.aura-unknown { background: var(--orange); color: var(--white); }
+.tile .rg.seen { outline: 2px dashed var(--white); outline-offset: 1px; }
 .tile .say { position: absolute; z-index: 3; top: 22px; left: 5px; right: 5px; background: var(--pink-soft); color: var(--ink); border-radius: 10px; padding: 3px 7px; font-size: 11.5px; font-weight: 600; line-height: 1.35; text-align: center;
   overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,.2); animation: say .3s var(--ease); }
 .tile .say span { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -703,7 +707,10 @@ function tileParts(p, i) {
   const target = showVotes && S.votes[p.id];
   const got = showVotes ? Object.values(S.votes).filter(t => t === p.id).length : 0;
   const picked = mode?.picked.includes(p.id) || (showVotes && S.votes[S.me.id] === p.id);
-  const tags = [p.id === S.me.lover || (S.me.lover && p.id === S.me.id) ? ic('heart') : '', p.id === S.me.mark || p.id === S.me.hhTarget ? ic('target') : ''].join('');
+  const nt = p.alive ? S.me.notes?.[p.id] || {} : {};
+  const tags = [p.id === S.me.lover || (S.me.lover && p.id === S.me.id) || nt.lover ? ic('heart') : '', p.id === S.me.mark || p.id === S.me.hhTarget ? ic('target') : '',
+    nt.douse ? `<i class="ph-bold ph-gas-can douse" title="Đã tẩm xăng"></i>` : '', nt.bomb ? `<i class="ph-bold ph-bomb bomb" title="Đã gài bom"></i>` : '',
+    nt.aura ? `<i class="ph-bold ${{ good: 'ph-sun aura-good', evil: 'ph-skull aura-evil', unknown: 'ph-question aura-unknown' }[nt.aura]}" title="Hào quang: ${{ good: 'Tốt', evil: 'Ác', unknown: 'Không rõ' }[nt.aura]}"></i>` : ''].join('');
   const kickable = S.phase === 'lobby' && S.host === S.me.id && p.id !== S.me.id;
   const say = says[p.id] && says[p.id].until > Date.now() ? `<div class="say"><span>${esc(says[p.id].t)}</span></div>` : '';
   const cls = ['tile', p.alive ? '' : 'dead', p.id === S.me.id ? 'me' : '', targetable(p) ? 'tg' : '', picked ? 'pk' : '', dying[p.id] > Date.now() ? 'dying' : ''].join(' ');
@@ -711,7 +718,7 @@ function tileParts(p, i) {
     ${p.alive ? avatarSvg(p.avatar, '', true) : graveSvg(p.avatar.grave, '', true)}
     ${target ? `<span class="sign">${seatNo(target)}</span>` : ''}
     ${got ? `<span class="hand">${ic('hand-pointing')}<b>${got}</b></span>` : ''}${say}
-    ${p.role ? ri(p.role) : ''}${tags ? `<span class="tags">${tags}</span>` : ''}
+    ${p.role ? ri(p.role) : nt.role ? ri(nt.role).replace('class="rg ', 'class="rg seen ').replace('">', ' (bạn đã soi)">') : ''}${tags ? `<span class="tags">${tags}</span>` : ''}
     ${S.phase === 'lobby' && S.host === p.id ? `<i class="ph-bold ph-crown-simple host" aria-label="Chủ phòng"></i>` : ''}
     ${kickable ? `<button class="kick" data-kick="${p.id}" aria-label="Mời ${esc(p.name)} ra">${ic('x')}</button>` : ''}`, p];
 }

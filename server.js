@@ -21,7 +21,7 @@ function save() {
     fs.renameSync(DB_FILE + '.tmp', DB_FILE);
   }, 200);
 }
-Object.assign(game.settings.times, db.settings.times || {});
+if (db.settings.v === 2) Object.assign(game.settings.times, db.settings.times || {});
 game.settings.disabled = db.settings.disabled || [];
 
 // ---------- accounts ----------
@@ -176,7 +176,7 @@ function adminApi(b, token, ip) {
     case 'settings':
       if (b.times) for (const k of ['night', 'day', 'vote']) game.settings.times[k] = Math.min(600, Math.max(10, +b.times[k] || game.settings.times[k]));
       if (Array.isArray(b.disabled)) game.settings.disabled = b.disabled.filter(k => AV.ROLES[k] && k !== 'werewolf' && k !== 'villager');
-      db.settings = { times: game.settings.times, disabled: game.settings.disabled };
+      db.settings = { v: 2, times: game.settings.times, disabled: game.settings.disabled };
       save();
       return { settings: db.settings };
     case 'getSettings': return { settings: { times: game.settings.times, disabled: game.settings.disabled } };

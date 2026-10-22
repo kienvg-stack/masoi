@@ -1,7 +1,7 @@
 // Game engine: rooms, phases, role abilities, bots. Pure logic — server.js owns HTTP, accounts and push transport.
 const { ROLES, randomAvatar, checkSetup, SOLO_KILLERS } = require('./public/shared');
 
-const settings = { times: { night: 45, day: 60, vote: 30 }, disabled: [] }; // server.js overwrites from db
+const settings = { times: { night: 30, day: 60, vote: 30 }, disabled: [], early: false }; // early: end night/vote once everyone acted (tests only) // server.js overwrites from db
 const hooks = { push: () => {}, onEnd: () => {} };
 const rooms = {};
 const userRoom = {}; // uid -> room code
@@ -14,6 +14,8 @@ const rnd = a => a[Math.floor(Math.random() * a.length)];
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const say = (r, text, ch = 'sys', extra = {}) => r.msgs.push({ n: r.seq = (r.seq || 0) + 1, ch, text, ...extra });
 const priv = (r, p, text, extra = {}) => say(r, text, 'priv', { to: p.id, ...extra });
+// what a player privately knows about another, drawn on that player's tile
+const note = (p, t, k, v = true) => { ((p.notes = p.notes || {})[t.id] = p.notes[t.id] || {})[k] = v; };
 const tally = (votes, weight = () => 1) => { const c = {}; for (const [v, t] of Object.entries(votes)) c[t] = (c[t] || 0) + weight(v); return c; };
 
 // counts {target: n} -> top target; ties -> null, or a random top pick when tieRandom
@@ -77,10 +79,12 @@ function endNight(r) {
   for (const x of by('see')) {
     const t = P(r, x.t[0]), role = P(r, x.by).role === 'wolf_seer' ? t.role : looks(t);
     priv(r, P(r, x.by), `🔮 ${t.name} là ${N(role)}`, { fx: 'see', role, av: t.avatar });
+    note(P(r, x.by), t, 'role', role);
   }
   for (const x of by('aura')) {
     const t = P(r, x.t[0]), tm = looksTeam(t);
     priv(r, P(r, x.by), `🌈 Hào quang của ${t.name}: ${tm === 'wolf' ? 'ÁC 😈' : tm === 'solo' ? 'KHÔNG RÕ ❔' : 'TỐT 😇'}`, { fx: 'aura', av: t.avatar });
+    note(P(r, x.by), t, 'aura', tm === 'wolf' ? 'evil' : tm === 'solo' ? 'unknown' : 'good');
   }
   for (const x of by('compare')) {
     const [t1, t2] = x.t.map(id => P(r, id)), same = looksTeam(t1) === looksTeam(t2) && looksTeam(t1) !== 'solo';
@@ -89,10 +93,11 @@ function endNight(r) {
   for (const x of by('link')) {
     const [t1, t2] = x.t.map(id => P(r, id));
     t1.lover = t2.id; t2.lover = t1.id;
+    note(P(r, x.by), t1, 'lover'); note(P(r, x.by), t2, 'lover');
     priv(r, t1, `💘 Bạn và ${t2.name} đã trở thành tình nhân!`, { fx: 'link', av: t2.avatar });
     priv(r, t2, `💘 Bạn và ${t1.name} đã trở thành tình nhân!`, { fx: 'link', av: t1.avatar });
   }
-  for (const x of by('douse')) x.t.forEach(id => { P(r, id).doused = true; });
+  for (const x of by('douse')) x.t.forEach(id => { P(r, id).doused = true; note(P(r, x.by), P(r, id), 'douse'); });
   for (const x of by('trap')) P(r, x.by).trap = x.t[0];
 
   // attacks carry who made them, so the Spirit Seer can tell killers apart
@@ -109,6 +114,7 @@ function endNight(r) {
       .forEach(p => attacks.push({ t: p.id, by: 'bomb', who: [b.owner] }));
   }
   r.bombs = (r.bombs || []).filter(b => b.night >= r.day).concat(by('bomb').map(x => ({ t: x.t[0], owner: x.by, night: r.day })));
+  by('bomb').forEach(x => note(P(r, x.by), P(r, x.t[0]), 'bomb'));
 
   const protect = by('protect'), guards = Object.fromEntries(by('guard').map(x => [x.t[0], x.by]));
   const visiting = Object.fromEntries(by('visit').map(x => [x.by, x.t[0]]));
@@ -315,7 +321,7 @@ function handle(b, u) {
     if (r.setup && r.players.length !== r.setup.length) throw `Phòng cần đủ ${r.setup.length} người để bắt đầu (đang có ${r.players.length})`;
     const roles = r.setup ? shuffle([...r.setup]) : dealRoles(r.players.length);
     r.players.forEach((p, i) => {
-      for (const k of ['death', 'lover', 'mark', 'shieldUsed', 'wounded', 'revealed', 'hhTarget', 'doused', 'won', 'trap']) delete p[k];
+      for (const k of ['death', 'lover', 'mark', 'shieldUsed', 'wounded', 'revealed', 'hhTarget', 'doused', 'won', 'trap', 'notes']) delete p[k];
       Object.assign(p, { role: roles[i], alive: true, uses: Object.fromEntries((ROLES[roles[i]].ab || []).filter(a => a.uses).map(a => [a.k, a.uses])) });
     });
     Object.assign(r, { day: 0, msgs: [], winner: null, blocked: new Set(), bombs: [], muted: new Set(), glitched: new Set(), started: Date.now() });
@@ -342,13 +348,13 @@ function handle(b, u) {
     if (r.muted && r.muted.has(me.id)) throw 'Hôm nay bạn không được bỏ phiếu';
     if (!t || !t.alive || t === me) throw 'Chọn người khác';
     r.votes[me.id] = t.id;
-    if (alive(r).every(p => r.votes[p.id] || (r.muted && r.muted.has(p.id)))) { clearTimeout(r.timer); endVote(r); }
+    if (settings.early && alive(r).every(p => r.votes[p.id] || (r.muted && r.muted.has(p.id)))) { clearTimeout(r.timer); endVote(r); }
     return;
   }
   if (b.action === 'pass') {
     if (r.phase !== 'night' || !required(r, me)) throw 'Không cần bỏ qua';
     r.act.done[me.id] = 1;
-    if (nightDone(r)) { clearTimeout(r.timer); endNight(r); }
+    if (settings.early && nightDone(r)) { clearTimeout(r.timer); endNight(r); }
     return;
   }
   if (b.action === 'act') return act(r, me, b);
@@ -420,7 +426,7 @@ function act(r, me, b) {
   }
   if (r.phase === 'night' && ab.req) {
     r.act.done[me.id] = 1;
-    if (nightDone(r)) { clearTimeout(r.timer); endNight(r); }
+    if (settings.early && nightDone(r)) { clearTimeout(r.timer); endNight(r); }
   }
 }
 
@@ -465,7 +471,7 @@ function view(r, uid) {
   return {
     code: r.code, host: r.host, phase: r.phase, day: r.day, winner: r.winner, left: r.ends ? r.ends - Date.now() : 0, setup: r.setup, cap: cap(r),
     muted: !!(r.muted && r.muted.has(uid)),
-    me: { id: me.id, role: me.role, alive: me.alive, lover: me.lover, mark: me.mark, hhTarget: me.hhTarget },
+    me: { id: me.id, role: me.role, alive: me.alive, lover: me.lover, mark: me.mark, hhTarget: me.hhTarget, notes: me.notes || {} },
     abilities: (me.role && ROLES[me.role].ab || []).map(ab => ({ ...ab, left: ab.uses ? me.uses[ab.k] : null, ok: !over && usable(r, me, ab) })),
     canPass: night && required(r, me) && !r.act.done[uid],
     blocked: night && r.blocked.has(uid),

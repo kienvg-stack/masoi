@@ -6,6 +6,7 @@ const { ROLES } = require('./public/shared');
 const { gameApi, adminApi, db } = require('./server');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 Object.assign(game.settings.times, { night: 30, day: 0.05, vote: 30 });
+game.settings.early = true;
 
 let n = 0;
 function setup(roles) {
@@ -151,6 +152,15 @@ function setup(roles) {
     assert.throws(() => game.handle({ action: 'addbot', code }, host), /đầy/);
     game.handle({ action: 'start', code }, host);
     assert.deepEqual(room.players.map(p => p.role).sort(), ['seer', 'villager', 'villager', 'werewolf']);
+  }
+  // private notes: seer remembers the role, arsonist sees who is doused
+  {
+    const { r, act } = setup(['werewolf', 'seer', 'arsonist', 'villager', 'villager', 'villager', 'villager', 'villager']);
+    act(1, 'see', 0); act(2, 'douse', 3, 4); act(0, 'kill', 7);
+    const v = id => game.view(r, r.players[id].id).me.notes;
+    assert.equal(v(1)[r.players[0].id].role, 'werewolf');
+    assert(v(2)[r.players[3].id].douse && v(2)[r.players[4].id].douse);
+    assert.deepEqual(v(3), {});
   }
   console.log('all checks passed');
   process.exit(0);
