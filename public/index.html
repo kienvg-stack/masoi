@@ -130,7 +130,7 @@ svg.avatar { display: block; overflow: visible; }
 .abl span { font-size: 12px; font-weight: 700; background: var(--paper); border-radius: 99px; padding: 2px 9px; display: inline-flex; gap: 4px; align-items: center; }
 
 /* ---------- GAME: tile grid over chat, like the reference ---------- */
-#game { height: 100dvh; display: grid; grid-template-rows: auto minmax(0, 1fr); max-width: 1240px; margin: 0 auto; }
+#game { height: 100dvh; display: grid; grid-template-rows: auto minmax(0, 1fr); max-width: 1500px; margin: 0 auto; }
 .top { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; padding: 6px 8px 0; background: var(--white); color: var(--ink); }
 body.night .top { background: #12151c; color: #eef0f4; }
 .top button { width: 40px; height: 40px; padding: 0; background: transparent; color: inherit; box-shadow: none; font-size: 20px; }
@@ -140,10 +140,9 @@ body.night .top { background: #12151c; color: #eef0f4; }
 #tnum { font-variant-numeric: tabular-nums; color: var(--soft); } #tnum.low { color: var(--pink); }
 .top .sub { font-size: 12px; color: var(--soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .top .fuse { grid-column: 1 / -1; height: 3px; margin: 6px -8px 0; background: var(--pink); transform-origin: left; transition: transform .25s linear; }
-.stage { display: grid; grid-template-columns: min(56%, calc((100dvh - 70px) * 3 / var(--rows, 4))) minmax(0, 1fr); min-height: 0; }
-.board { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 1fr; gap: 3px; padding: 3px; background: var(--white); align-content: start; aspect-ratio: 3 / var(--rows, 4); max-height: 100%; }
+.stage { display: grid; grid-template-columns: min(58%, calc((100dvh - 72px) * .75)) minmax(0, 1fr); min-height: 0; }
+.board { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); gap: 3px; padding: 3px; background: var(--white); aspect-ratio: 3 / 4; align-self: start; }
 #fx .card svg.avatar { max-height: 40vh; }
-.board[data-rows="2"] .tile:nth-child(n+9), .board[data-rows="3"] .tile:nth-child(n+13) { display: none; }
 body.night .board { background: #12151c; }
 .tile { position: relative; overflow: hidden; border-radius: 4px; background: var(--sky) var(--trees) bottom / 100% auto no-repeat; transition: transform .15s var(--ease), box-shadow .15s; min-width: 0; }
 /* night falls tile by tile, dawn sweeps warm light across in the same order (--i = diagonal index) */
@@ -160,10 +159,21 @@ body.dawn .tile::after { animation: sunup 1.3s ease-out calc(var(--i, 0) * 110ms
 @keyframes hit { 25% { transform: translateX(-4px); } 50% { transform: translateX(4px); } 75% { transform: translateX(-2px); } }
 @keyframes bleed { 0% { opacity: .9; } 100% { opacity: 0; } }
 @keyframes graveIn { from { transform: translateY(40%); opacity: 0; } }
+.tile.vacant::before { background: rgba(255,255,255,.18); opacity: 1; }
+body.night .tile.vacant::before { background: var(--night) var(--trees-n) bottom / 100% auto no-repeat; }
+.tile .seat-free { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 4px; color: rgba(255,255,255,.75); }
+.tile .seat-free i { font-size: clamp(26px, 3.4vw, 44px); }
+.tile .seat-free small { font-size: 12px; font-weight: 700; }
 .tile .nm { position: absolute; top: 4px; left: 4px; right: 4px; z-index: 2; text-align: center; color: var(--white); font-weight: 700; font-size: 13px; line-height: 1.3; text-shadow: 0 1px 2px rgba(0,0,0,.55); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tile.me .nm { color: var(--pink); text-shadow: 0 0 2px #fff, 0 0 3px #fff, 0 0 4px #fff; }
 .tile svg.avatar { position: absolute; left: 6%; bottom: 0; width: 88%; height: 82%; }
-.tile.dead { filter: saturate(.3) brightness(.82); }
+.tile.dead { background: #5d6577 var(--trees-n) bottom / 100% auto no-repeat; }
+.tile.dead .flame { animation: flick 1.1s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: 50% 100%; }
+.tile.dead .fog { animation: drift 5s ease-in-out infinite alternate; }
+.tile.dead .gglow { animation: haunt 2.6s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
+@keyframes flick { from { transform: scale(.85, .8); opacity: .8; } to { transform: scale(1.1, 1.15); opacity: 1; } }
+@keyframes drift { from { transform: translateX(-6px); } to { transform: translateX(6px); } }
+@keyframes haunt { from { opacity: .6; transform: scale(.94); } to { opacity: 1; transform: scale(1.04); } }
 .tile.dead svg.avatar { height: 84%; left: 6%; width: 88%; }
 .tile.dead .nm { text-decoration: line-through; opacity: .85; }
 .tile .sign { position: absolute; z-index: 2; left: 50%; bottom: 2%; transform: translateX(-50%) rotate(-3deg); min-width: 40%; padding: 3px 8px; background: var(--wood); border: 2px solid #5e3b1b; border-radius: 4px; color: var(--white); font: 800 clamp(13px, 1.6vw, 18px)/1.3 var(--display); text-align: center; box-shadow: 0 3px 6px rgba(0,0,0,.3); }
@@ -216,8 +226,15 @@ body.night .event { background: #323845; color: #ff7aa6; }
 #acts:empty { display: none; }
 #acts button { padding: 9px 14px; font-size: 14px; }
 .composer { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 6px; align-items: center; }
-#myRole { cursor: pointer; display: grid; place-items: center; }
-#myRole .rg { font-size: 18px; width: 42px; height: 42px; border-radius: 12px; }
+#emojiBtn { width: 42px; height: 42px; padding: 0; border-radius: 12px; background: var(--mint); font-size: 22px; }
+#emojiBtn[aria-expanded="true"] { background: var(--ink); }
+.composer { position: relative; }
+/* emoji picker: the platform's own emoji font, grouped like a phone keyboard */
+.emoji-pop { position: absolute; left: 0; bottom: calc(100% + 8px); z-index: 30; width: min(360px, calc(100vw - 20px)); max-height: 300px; overflow-y: auto; background: var(--white); color: var(--ink); border-radius: 16px; padding: 8px 10px 10px; box-shadow: 0 12px 30px rgba(0,0,0,.25); animation: pop .2s var(--ease) both; }
+.emoji-pop h4 { margin: 8px 4px 4px; font: 700 12px 'Be Vietnam Pro', sans-serif; color: var(--soft); }
+.emoji-pop .grid8 { display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; }
+.emoji-pop button { background: transparent; box-shadow: none; padding: 0; height: 38px; border-radius: 8px; font: 24px/1 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif; color: inherit; }
+.emoji-pop button:hover, .emoji-pop button:focus-visible { background: var(--paper); filter: none; }
 #chatForm { display: contents; }
 #chatForm input { background: var(--white); border-radius: 999px; }
 body.night #chatForm input { background: #1a1e27; color: #eef0f4; border-color: #3a404c; }
@@ -290,7 +307,6 @@ body.night #chatForm input { background: #1a1e27; color: #eef0f4; border-color: 
   .tile .nm { font-size: 14.5px; top: 6px; } .tile .say { font-size: 13px; top: 28px; }
   .thread { font-size: 15px; }
   /* rows stretch to the full column height so the board meets the composer line */
-  .board { aspect-ratio: auto; height: 100%; grid-auto-rows: auto; grid-template-rows: repeat(var(--rows, 4), 1fr); align-content: stretch; }
 }
 @media (max-width: 900px) {
   #auth { grid-template-columns: 1fr; align-items: start; }
@@ -306,6 +322,8 @@ body.night #chatForm input { background: #1a1e27; color: #eef0f4; border-color: 
   .stage { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); }
   .board { aspect-ratio: auto; grid-auto-rows: min(31vw, calc((100dvh - 300px) / 4)); }
   .tile .nm { font-size: 11.5px; }
+  .board { aspect-ratio: auto; grid-template-rows: none; }
+  .board[data-rows="2"] .tile:nth-child(n+9), .board[data-rows="3"] .tile:nth-child(n+13) { display: none; }
   .poll { display: none; }
   .event { margin: 4px 0 2px; padding: 6px 10px; font-size: 13.5px; } .event i { font-size: 18px; }
 }
@@ -397,7 +415,8 @@ body.night #chatForm input { background: #1a1e27; color: #eef0f4; border-color: 
           <div id="hint"></div>
           <div id="acts"></div>
           <div class="composer">
-            <div id="myRole" role="button" tabindex="0" aria-label="Xem vai trò của bạn"></div>
+            <button type="button" id="emojiBtn" aria-label="Chọn emoji" aria-expanded="false" aria-controls="emojiPop"><i class="ph-bold ph-smiley"></i></button>
+            <div class="emoji-pop hidden" id="emojiPop" role="dialog" aria-label="Bảng emoji"></div>
             <form id="chatForm"><input id="msg" maxlength="200" autocomplete="off" aria-label="Tin nhắn"><button aria-label="Gửi"><i class="ph-bold ph-paper-plane-right"></i></button></form>
           </div>
         </footer>
@@ -568,7 +587,7 @@ $('leave').onclick = async () => {
   if (S && !['lobby', 'end'].includes(S.phase) && !confirm('Ván đang diễn ra. Bạn chắc chắn muốn rời làng?')) return;
   await api({ action:'leave' }).catch(() => {}); es?.close(); es = null; S = null; ME = (await api({ action:'me' })).user; show('home');
 };
-$('chatForm').onsubmit = e => { e.preventDefault(); const t = $('msg').value; $('msg').value = ''; if (t.trim()) act({ action:'chat', text:t }); };
+$('chatForm').onsubmit = e => { e.preventDefault(); toggleEmoji(false); const t = $('msg').value; $('msg').value = ''; if (t.trim()) act({ action:'chat', text:t }); };
 
 // ---------- game: render ----------
 const isWolf = p => p?.role && ROLES[p.role].t === 'wolf';
@@ -590,7 +609,7 @@ const says = {};
 const dying = {}; // player id -> until: tile plays its death beat
 let wasAlive = {};
 function tileParts(p, i) {
-  if (!p) return ['tile', ''];
+  if (!p) return ['tile vacant', `<span class="seat-free">${ic('user')}<small>Ghế trống</small></span>`];
   const showVotes = S.phase === 'vote' || S.phase === 'night';
   const target = showVotes && S.votes[p.id];
   const got = showVotes ? Object.values(S.votes).filter(t => t === p.id).length : 0;
@@ -666,7 +685,6 @@ function render() {
   paintBoard();
 
   const role = S.me.role;
-  $('myRole').innerHTML = role ? ri(role) : `<span class="rg t-village">${ic('mask-happy')}</span>`;
   const acts = [];
   if (['lobby', 'end'].includes(S.phase) && S.host === S.me.id) {
     if (S.phase === 'lobby') acts.push(`<button class="sec" data-a="addbot" ${S.players.length >= 16 ? 'disabled' : ''}>${ic('robot')}Thêm bot</button>`);
@@ -689,6 +707,7 @@ function render() {
   if (stick) log.scrollTop = log.scrollHeight;
   const canTalk = S.phase !== 'night' || !S.me.alive || isWolf(me) || S.me.role === 'medium';
   $('msg').disabled = !canTalk;
+  $('emojiBtn').disabled = !canTalk;
   $('msg').placeholder = !canTalk ? 'Ban đêm làng im lặng' : !S.me.alive && !['lobby', 'end'].includes(S.phase) ? 'Nhắn cho những người đã chết' : S.phase === 'night' && isWolf(me) ? 'Thì thầm với bầy sói' : S.phase === 'night' ? 'Trò chuyện với người chết' : 'Gửi tin nhắn';
   renderResult();
 }
@@ -724,9 +743,30 @@ function openRole() {
   m.innerHTML = `<div class="sheet"><div class="rolecard">${ri(r)}<div><h2>${ROLES[r].n}</h2>${teamTag(ROLES[r].t)}<p>${ROLES[r].d}</p></div></div><div class="acts2"><button data-close>Đã hiểu</button></div></div>`;
   m.classList.remove('hidden');
 }
-$('myRole').onclick = openRole;
 $('help').onclick = openRole;
-$('myRole').onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openRole(); } };
+// emoji picker: inserts at the caret so players can mix emoji into a sentence
+const EMOJI = {
+  'Cảm xúc': '😀 😂 🤣 😅 😊 😍 😘 😎 🤩 🥳 😇 🙂 😉 😜 🤪 🤗 🤔 🤨 😐 🙄 😏 😬 🤐 🤫 🤭 🫣 😴 🥱 😮 😱 😨 😰 😢 😭 😤 😡 🤬 🥺 😳 🤯 🤡 🥴 😵 🤥',
+  'Ma sói': '🐺 🌙 🌕 ☀️ 🌅 💀 ☠️ 👻 🔪 🩸 ⚰️ 🪦 🕯️ 🔮 🛡️ 💉 🧪 🏹 🔫 🔥 💘 🎯 🃏 🕵️ ⚖️ 🗳️ 🪓 🧄',
+  'Cử chỉ': '👍 👎 👏 🙌 🙏 🤝 👋 ✌️ 🤞 🤙 👌 🤌 👀 🫡 💪 🤷 🙅 🙋 🤦 🖐️ ☝️ 👉 👈',
+  'Biểu tượng': '❤️ 💔 💯 ✅ ❌ ❓ ❗ ‼️ ⭐ ✨ 🎉 💤 💢 💬 🚨 ⚠️ 🆘 🍀 🎲 🏆',
+};
+$('emojiPop').innerHTML = Object.entries(EMOJI).map(([g, list]) => `<h4>${g}</h4><div class="grid8">${list.split(' ').map(e => `<button type="button" data-emoji="${e}" aria-label="${e}">${e}</button>`).join('')}</div>`).join('');
+function toggleEmoji(open = $('emojiPop').classList.contains('hidden')) {
+  $('emojiPop').classList.toggle('hidden', !open);
+  $('emojiBtn').setAttribute('aria-expanded', open);
+}
+$('emojiBtn').onclick = e => { e.stopPropagation(); toggleEmoji(); };
+$('emojiPop').onclick = e => {
+  e.stopPropagation();
+  const em = e.target.closest('[data-emoji]')?.dataset.emoji, box = $('msg');
+  if (!em || box.disabled) return;
+  const a = box.selectionStart ?? box.value.length, b = box.selectionEnd ?? a;
+  box.value = (box.value.slice(0, a) + em + box.value.slice(b)).slice(0, 200);
+  box.focus(); box.setSelectionRange(a + em.length, a + em.length);
+};
+document.addEventListener('click', () => toggleEmoji(false));
+document.addEventListener('keydown', e => { if (e.key === 'Escape') toggleEmoji(false); });
 $('modal').onclick = e => {
   if (e.target.closest('[data-close]') || e.target === $('modal')) { $('modal').classList.add('hidden'); $('modal').dataset.kind = ''; resultOpen = false; }
   if (e.target.closest('[data-a="start"]')) act({ action:'start' });

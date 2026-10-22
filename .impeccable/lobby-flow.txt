@@ -1,0 +1,11 @@
+await run(`(async () => { document.getElementById('create').click(); await new Promise(r => setTimeout(r, 1500)); return S.code; })()`);
+await sleep(800);
+await shot('d-lobby-big.png', 1668, 1245); await shot('d-lobby.png', 1440, 900); await shot('m-lobby1.png', 390, 844);
+await run(`(() => { document.getElementById('emojiBtn').click(); return 1; })()`); await sleep(400);
+await shot('m-emoji.png', 390, 844); await shot('d-emoji.png', 1440, 900);
+await run(`(() => { document.querySelector('[data-emoji="🐺"]').click(); document.querySelector('[data-emoji="😱"]').click(); return document.getElementById('msg').value; })()`).then(v => console.log('input', v));
+await run(`(async () => { document.getElementById('chatForm').requestSubmit(); for (let i = 0; i < 11; i++) await api({ action: 'addbot', code: S.code }); await api({ action: 'start', code: S.code }); return 1; })()`);
+const until = async ph => { for (let i = 0; i < 120; i++) { if (await run('S && S.phase') === ph) return; await sleep(500); } };
+await until('day'); await sleep(2500);
+await shot('d-dead.png', 1440, 900); await shot('m-dead.png', 390, 844);
+await run(`api({ action: 'leave' })`);

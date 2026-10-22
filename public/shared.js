@@ -383,13 +383,13 @@ function avatarSvg(a, cls = '', bust = false) {
 }
 // every grave sits in a small scene: eerie glow behind, earth mound, grass, two lit candles and ground fog in front
 const GRAVE_BACK = `<defs><radialGradient id="gglow"><stop offset="0" stop-color="#cfe9ff" stop-opacity=".75"/><stop offset=".6" stop-color="#9fc6ff" stop-opacity=".22"/><stop offset="1" stop-color="#9fc6ff" stop-opacity="0"/></radialGradient></defs>` +
-  `<ellipse cx="60" cy="104" rx="58" ry="56" fill="url(#gglow)"/>`;
+  `<ellipse class="gglow" cx="60" cy="104" rx="58" ry="56" fill="url(#gglow)"/>`;
 const candle = x => `<rect x="${x - 2.5}" y="136" width="5" height="12" rx="1.5" fill="#f3ede0"/><ellipse cx="${x}" cy="131" rx="5" ry="7" fill="#ffd84d" opacity=".35"/>` +
-  F(`M${x} 126 Q${x + 3} 131 ${x} 134.5 Q${x - 3} 131 ${x} 126Z`, '#ffb020') + F(`M${x} 129 Q${x + 1.4} 132 ${x} 134 Q${x - 1.4} 132 ${x} 129Z`, '#fff3b0');
+  `<g class="flame">` + F(`M${x} 126 Q${x + 3} 131 ${x} 134.5 Q${x - 3} 131 ${x} 126Z`, '#ffb020') + F(`M${x} 129 Q${x + 1.4} 132 ${x} 134 Q${x - 1.4} 132 ${x} 129Z`, '#fff3b0') + '</g>';
 const GRAVE_FRONT = F('M14 154 Q22 140 60 140 Q98 140 106 154Z', '#5b4632') + F('M22 154 Q30 146 60 146 Q90 146 98 154Z', '#6e563d') +
   [20, 30, 44, 76, 90, 100].map((x, i) => S(`M${x} 154 L${x - 2} ${146 - i % 2 * 3} M${x} 154 L${x + 3} ${147 - i % 3 * 2}`, '#4fae6a', 1.6)).join('') +
   candle(22) + candle(98) +
-  `<ellipse cx="30" cy="156" rx="30" ry="5" fill="#fff" opacity=".3"/><ellipse cx="92" cy="157" rx="28" ry="4.5" fill="#fff" opacity=".26"/><ellipse cx="60" cy="159" rx="40" ry="4" fill="#fff" opacity=".2"/>`;
+  `<g class="fog"><ellipse cx="30" cy="156" rx="30" ry="5" fill="#fff" opacity=".3"/><ellipse cx="92" cy="157" rx="28" ry="4.5" fill="#fff" opacity=".26"/><ellipse cx="60" cy="159" rx="40" ry="4" fill="#fff" opacity=".2"/></g>`;
 const graveSvg = (key, cls = '', bust = false) => `<svg class="avatar ${cls}" ${bust ? 'viewBox="-6 30 132 132" preserveAspectRatio="xMidYMax meet"' : VB}>${GRAVE_BACK}${(GRAVE[key] || GRAVE.stone).f()}${GRAVE_FRONT}</svg>`;
 // a single slot item rendered alone, for wardrobe thumbnails
 function itemSvg(slot, key) {
