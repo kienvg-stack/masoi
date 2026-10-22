@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ma Sói Online</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root { --sky1:#0b0f2a; --sky2:#232a63; --panel:rgba(18,22,52,.86); --panel2:rgba(255,255,255,.06); --line:rgba(255,255,255,.12);
+  --txt:#f1eefc; --mut:#a3a8cf; --acc:#ffbf3c; --acc2:#ff8a3c; --red:#ef5350; --green:#4cc36a; --blue:#5aa9ff; }
+body.day { --sky1:#7cc4f2; --sky2:#ffd98a; --panel:rgba(40,28,60,.84); }
+* { box-sizing:border-box; }
+html, body { margin:0; min-height:100%; }
+body { font-family:'Baloo 2',system-ui,sans-serif; color:var(--txt); font-size:15px; background:linear-gradient(180deg,var(--sky1),var(--sky2)) fixed; transition:background 1s; overflow-x:hidden; }
+body::before { content:''; position:fixed; inset:0; pointer-events:none; transition:opacity 1s;
+  background-image:radial-gradient(1.5px 1.5px at 8% 12%,#fff,transparent),radial-gradient(1px 1px at 22% 38%,#fff,transparent),radial-gradient(1.5px 1.5px at 41% 8%,#fff,transparent),radial-gradient(1px 1px at 63% 22%,#fff,transparent),radial-gradient(1.5px 1.5px at 79% 9%,#fff,transparent),radial-gradient(1px 1px at 91% 33%,#fff,transparent),radial-gradient(1px 1px at 52% 44%,#fff,transparent),radial-gradient(1px 1px at 33% 61%,#fff,transparent); }
+body.day::before { opacity:0; }
+.hills { position:fixed; left:0; right:0; bottom:0; height:22vh; pointer-events:none; z-index:-1;
+  background:radial-gradient(60% 100% at 20% 100%,#141a3a 60%,transparent 61%),radial-gradient(70% 90% at 85% 100%,#10152f 60%,transparent 61%); transition:filter 1s; }
+body.day .hills { filter:hue-rotate(60deg) brightness(2.2) saturate(.6); }
+.sky-orb { position:fixed; top:22px; right:5vw; width:64px; height:64px; border-radius:50%; z-index:-1; background:#f5ecc8; box-shadow:0 0 60px 12px rgba(245,236,200,.35), inset -12px -6px 0 #ddd1a5; transition:1s; }
+body.day .sky-orb { background:#ffe066; box-shadow:0 0 90px 36px rgba(255,214,90,.65); }
+button { font:inherit; font-weight:800; border:0; border-radius:12px; padding:9px 16px; cursor:pointer; color:#3a2205;
+  background:linear-gradient(180deg,#ffd36a,var(--acc)); box-shadow:0 4px 0 #c6801b; transition:transform .08s, filter .15s; }
+button:hover { filter:brightness(1.08); } button:active { transform:translateY(3px); box-shadow:0 1px 0 #c6801b; }
+button.ghost { background:var(--panel2); color:var(--txt); box-shadow:0 3px 0 rgba(0,0,0,.35); border:1px solid var(--line); }
+button.red { background:linear-gradient(180deg,#ff7a73,var(--red)); color:#fff; box-shadow:0 4px 0 #a52a26; }
+button.blue { background:linear-gradient(180deg,#8cc4ff,var(--blue)); color:#08213f; box-shadow:0 4px 0 #2e6bb3; }
+button:disabled { opacity:.45; cursor:default; transform:none; }
+button.on { outline:3px solid #fff; }
+input { font:inherit; padding:10px 14px; border-radius:12px; border:2px solid var(--line); background:rgba(0,0,0,.35); color:var(--txt); min-width:0; outline:none; }
+input:focus { border-color:var(--acc); }
+.hidden { display:none !important; }
+.panel { background:var(--panel); border:2px solid var(--line); border-radius:18px; padding:16px; backdrop-filter:blur(8px); box-shadow:0 10px 30px rgba(0,0,0,.35); }
+.title { font-weight:800; font-size:clamp(46px,8vw,76px); line-height:1; color:var(--acc); text-shadow:0 4px 0 #a34d10, 0 10px 30px rgba(0,0,0,.5); letter-spacing:1px; }
+h3 { margin:0 0 10px; font-size:20px; }
+.mut { color:var(--mut); }
+.err { color:#ff8a80; min-height:1.3em; font-size:14px; font-weight:700; }
+.screen { max-width:1280px; margin:0 auto; padding:16px; }
+svg.avatar { display:block; overflow:visible; }
+.ri { display:inline-grid; place-items:center; width:1.9em; height:1.9em; border-radius:50%; background:radial-gradient(circle at 35% 30%,#3b3f6b,#151833); box-shadow:0 0 0 2px var(--c,#888); font-size:1em; line-height:1; flex:none; }
+.tm { font-size:11px; padding:1px 8px; border-radius:20px; font-weight:800; color:#fff; vertical-align:middle; }
+
+/* auth */
+#auth { display:grid; grid-template-columns:1fr 400px; gap:30px; align-items:center; min-height:100vh; }
+#auth .hero { text-align:center; }
+#auth .hero svg { width:min(260px,50vw); margin:20px auto 0; filter:drop-shadow(0 18px 24px rgba(0,0,0,.5)); animation:bob 3s ease-in-out infinite; }
+@keyframes bob { 50% { transform:translateY(-8px); } }
+.tabs { display:flex; gap:6px; margin-bottom:14px; }
+.tabs button { flex:1; }
+.form { display:grid; gap:10px; }
+
+/* home */
+.topbar { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+.topbar .title { font-size:38px; }
+.chip { display:inline-flex; align-items:center; gap:8px; background:var(--panel); border:2px solid var(--line); border-radius:40px; padding:4px 14px 4px 4px; font-weight:700; }
+.chip svg { width:34px; height:46px; margin-top:-8px; }
+#home .grid { display:grid; grid-template-columns:260px 1fr 340px; gap:16px; align-items:start; }
+.stage { text-align:center; padding-top:8px; }
+.stage svg { width:min(300px,70vw); margin:0 auto; filter:drop-shadow(0 20px 20px rgba(0,0,0,.45)); animation:bob 3.4s ease-in-out infinite; }
+.plinth { width:240px; height:34px; margin:-20px auto 0; border-radius:50%; background:radial-gradient(#5a5f8f,#262a4d 70%); box-shadow:0 8px 20px rgba(0,0,0,.5); }
+.nameplate { display:inline-block; margin-top:12px; padding:4px 22px; border-radius:30px; background:linear-gradient(180deg,#4b3a8a,#2c2260); border:2px solid #7a6bd0; font-size:22px; font-weight:800; }
+.bigplay { width:100%; font-size:28px; padding:16px; border-radius:18px; margin-bottom:12px; }
+.menu { display:grid; gap:10px; }
+.menu button { text-align:left; font-size:17px; padding:12px 16px; }
+.lobbies { display:grid; gap:8px; max-height:280px; overflow:auto; margin-top:8px; }
+.lob { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 12px; border-radius:12px; background:var(--panel2); }
+.lb { display:flex; align-items:center; gap:8px; padding:4px 0; border-bottom:1px solid var(--line); }
+.lb svg { width:30px; height:42px; } .lb b { flex:1; }
+
+/* wardrobe */
+#wardrobe .grid { display:grid; grid-template-columns:340px 1fr; gap:16px; }
+#wardrobe .stage svg { width:280px; } #wardrobe #wGrave svg { width:90px; animation:none; }
+.slots { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+.slots button { padding:6px 12px; font-size:14px; }
+.items { display:grid; grid-template-columns:repeat(auto-fill,minmax(104px,1fr)); gap:10px; max-height:62vh; overflow:auto; padding:4px; }
+.item { background:var(--panel2); border:2px solid transparent; border-radius:14px; padding:6px; cursor:pointer; text-align:center; font-size:12px; font-weight:700; transition:transform .1s; }
+.item:hover { transform:translateY(-2px); border-color:rgba(255,191,60,.5); }
+.item.sel { border-color:var(--acc); background:rgba(255,191,60,.15); }
+.item svg { width:100%; height:96px; }
+.swatch { height:60px; border-radius:10px; margin-bottom:4px; }
+
+/* roles */
+.rolegrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:12px; }
+.rc { display:flex; gap:12px; align-items:flex-start; }
+.rc .ri { font-size:26px; }
+.rc b { font-size:17px; } .rc small { display:block; color:var(--mut); line-height:1.45; margin-top:2px; }
+.abl { display:flex; gap:4px; flex-wrap:wrap; margin-top:6px; }
+.abl span { font-size:11px; background:var(--panel2); border-radius:8px; padding:1px 7px; }
+
+/* game */
+#game { display:grid; grid-template-columns:1fr minmax(320px,440px) 1fr; grid-template-rows:auto 1fr; gap:12px; height:100vh; padding:12px; max-width:1400px; margin:0 auto; }
+.gtop { grid-column:1/-1; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.phase { font-size:26px; font-weight:800; padding:2px 18px; border-radius:30px; background:var(--panel); border:2px solid var(--line); }
+.tbar { flex:1; min-width:120px; height:14px; border-radius:10px; background:rgba(0,0,0,.35); overflow:hidden; border:2px solid var(--line); }
+.tbar i { display:block; height:100%; background:linear-gradient(90deg,var(--acc2),var(--acc)); transition:width .25s linear; }
+.tnum { font-weight:800; font-size:22px; min-width:52px; text-align:right; font-variant-numeric:tabular-nums; }
+.col { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; align-content:start; overflow:auto; padding:4px; }
+.slot { position:relative; text-align:center; border-radius:16px; padding:4px 2px 6px; transition:transform .12s, background .2s; }
+.slot svg { width:100%; max-width:118px; height:120px; margin:0 auto; }
+.slot .nm { display:inline-block; max-width:100%; padding:0 10px; border-radius:20px; background:rgba(0,0,0,.45); font-weight:700; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.slot .no { position:absolute; top:2px; left:4px; width:24px; height:24px; border-radius:50%; background:#2c2260; border:2px solid #7a6bd0; font-size:12px; font-weight:800; display:grid; place-items:center; }
+.slot .rb { position:absolute; top:2px; right:4px; font-size:14px; }
+.slot .vt { position:absolute; top:40px; right:6px; background:var(--red); color:#fff; font-weight:800; border-radius:20px; padding:0 8px; font-size:13px; box-shadow:0 2px 6px rgba(0,0,0,.4); }
+.slot .tag { position:absolute; top:30px; left:6px; font-size:16px; }
+.slot.me .nm { background:#2f62c9; }
+.slot.dead .nm { text-decoration:line-through; color:var(--mut); }
+.slot.empty { opacity:.25; } .slot.empty svg { filter:brightness(0); }
+.slot.tg { cursor:pointer; background:rgba(255,191,60,.12); box-shadow:0 0 0 2px rgba(255,191,60,.55) inset; }
+.slot.tg:hover { transform:translateY(-3px); background:rgba(255,191,60,.25); }
+.slot.pk { box-shadow:0 0 0 3px var(--red) inset; background:rgba(239,83,80,.18); }
+.slot .kick { position:absolute; bottom:28px; right:4px; padding:0 7px; font-size:12px; border-radius:8px; }
+.center { display:flex; flex-direction:column; gap:10px; min-height:0; }
+.chat { flex:1; display:flex; flex-direction:column; min-height:0; padding:10px; }
+.log { flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:4px; padding-right:4px; min-height:120px; }
+.m { line-height:1.35; padding:3px 8px; border-radius:10px; word-wrap:break-word; }
+.m b { color:var(--acc); }
+.m.sys { color:#d6d9f5; text-align:center; font-size:13.5px; background:rgba(255,255,255,.05); }
+.m.wolf { background:rgba(208,69,63,.18); } .m.wolf b { color:#ff7d74; }
+.m.dead { background:rgba(150,150,180,.14); color:#c3c6dc; } .m.dead b { color:#b2b6d6; }
+.m.priv { background:rgba(142,91,214,.25); font-weight:700; color:#e2d3ff; }
+.chat form { display:flex; gap:6px; margin-top:8px; } .chat input { flex:1; }
+.bar { padding:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.myrole { display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:800; font-size:16px; }
+.myrole .ri { font-size:24px; }
+.acts { display:flex; gap:6px; flex-wrap:wrap; flex:1; justify-content:flex-end; }
+.acts button { padding:7px 12px; font-size:14px; }
+.hint { width:100%; font-size:14px; color:var(--acc); font-weight:700; }
+.banner { grid-column:1/-1; text-align:center; font-size:34px; font-weight:800; color:var(--acc); }
+
+/* fx overlay */
+#fx { position:fixed; inset:0; z-index:60; display:grid; place-items:center; pointer-events:none; }
+#fx .card { position:relative; width:min(250px,60vw); text-align:center; animation:pop .5s cubic-bezier(.2,1.6,.4,1); }
+#fx .card svg.avatar { width:100%; filter:drop-shadow(0 20px 40px rgba(0,0,0,.6)); }
+#fx .card .ri { font-size:90px; margin:20px auto; }
+#fx .cap { margin-top:8px; font-size:21px; font-weight:800; text-shadow:0 2px 10px #000; }
+#fx .fl { position:fixed; inset:0; animation:flash 1.2s ease-out forwards; }
+#fx .big { font-size:clamp(46px,9vw,96px); font-weight:800; color:var(--acc); text-shadow:0 6px 0 #a34d10, 0 0 60px rgba(0,0,0,.7); animation:pop .6s cubic-bezier(.2,1.6,.4,1); }
+@keyframes pop { from { transform:scale(.3); opacity:0; } }
+@keyframes flash { from { opacity:.75; } to { opacity:0; } }
+@keyframes shake { 0%,100% { transform:none; } 20% { transform:translate(-10px,4px); } 40% { transform:translate(10px,-4px); } 60% { transform:translate(-6px,2px); } 80% { transform:translate(6px,0); } }
+.shake { animation:shake .4s; }
+.claw { position:absolute; z-index:2; left:-10%; width:120%; height:10px; border-radius:10px; background:linear-gradient(90deg,transparent,#ff2a2a,#8b0000); transform-origin:left; animation:slash .35s ease-out both; box-shadow:0 0 18px #f00; }
+@keyframes slash { from { transform:rotate(var(--r)) scaleX(0); } to { transform:rotate(var(--r)) scaleX(1); } }
+.flip { animation:flip 1.2s ease-in-out both; } @keyframes flip { 50% { transform:rotateY(90deg); } }
+.glow { position:absolute; inset:-30%; border-radius:50%; animation:pulse 1.2s ease-in-out infinite; }
+@keyframes pulse { 0%,100% { transform:scale(.8); opacity:.5; } 50% { transform:scale(1.1); opacity:1; } }
+.ring { position:absolute; left:0; right:0; top:10%; aspect-ratio:1; border-radius:50%; border:6px solid #6fd0ff; animation:ring 1.4s ease-out infinite; box-shadow:0 0 30px #6fd0ff; }
+@keyframes ring { from { transform:scale(.9); opacity:1; } to { transform:scale(1.5); opacity:0; } }
+.bub { position:absolute; z-index:2; bottom:15%; width:14px; height:14px; border-radius:50%; animation:rise 1.6s ease-in both; }
+@keyframes rise { to { transform:translateY(-260px) scale(.4); opacity:0; } }
+.arrow { position:absolute; z-index:2; top:45%; left:-60%; width:90%; height:4px; background:#8b5a2b; animation:shoot .4s ease-in both; }
+.arrow::after { content:''; position:absolute; right:-14px; top:-8px; border:10px solid transparent; border-left:16px solid #ddd; }
+@keyframes shoot { to { left:40%; } }
+.rope { position:absolute; left:50%; top:-60vh; width:4px; height:62vh; background:#a07b4a; }
+.swing { transform-origin:50% -60vh; animation:swing 1.6s ease-in-out both; } @keyframes swing { 0% { transform:translateY(-70vh); } 40% { transform:rotate(8deg); } 70% { transform:rotate(-5deg); } 100% { transform:rotate(0); } }
+.sick svg.avatar { animation:sick 1.6s both; } @keyframes sick { to { filter:hue-rotate(80deg) saturate(2) brightness(.7) drop-shadow(0 0 30px #7cff4a); } }
+.dying svg.avatar { animation:dying 1.8s both; } @keyframes dying { to { filter:grayscale(1) brightness(.6); transform:translateY(10px); } }
+@media (prefers-reduced-motion:reduce) { #fx *, .stage svg, #auth .hero svg { animation-duration:.01s !important; } }
+
+/* modal */
+.modal { position:fixed; inset:0; z-index:50; background:rgba(5,6,15,.75); display:grid; place-items:center; padding:16px; }
+.modal > .panel { width:min(760px,100%); max-height:90vh; overflow:auto; background:#171c40; animation:pop .45s cubic-bezier(.2,1.4,.4,1); }
+.modal h2 { margin:0; text-align:center; font-size:40px; color:var(--acc); }
+.stats { display:flex; justify-content:center; gap:16px; color:var(--mut); margin:4px 0 12px; flex-wrap:wrap; font-weight:700; }
+.res { display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:10px; }
+.rp { text-align:center; border-radius:14px; padding:6px; background:var(--panel2); border:2px solid transparent; font-size:12.5px; }
+.rp.win { border-color:var(--green); background:rgba(76,195,106,.14); }
+.rp svg { width:90px; height:96px; margin:0 auto; }
+.rp b { display:block; font-size:14px; }
+.rp .ri { font-size:14px; }
+
+@media (max-width:1000px) {
+  #auth { grid-template-columns:1fr; min-height:0; padding-top:30px; }
+  #home .grid, #wardrobe .grid { grid-template-columns:1fr; }
+  #game { grid-template-columns:1fr; grid-template-rows:auto; height:auto; }
+  .col { grid-template-columns:repeat(4,1fr); overflow:visible; }
+  .col.right { order:2; } .center { order:3; } .chat { height:60vh; }
+  .slot svg { height:88px; }
+  .sky-orb { width:40px; height:40px; top:10px; right:10px; }
+}
+</style>
+</head>
+<body>
+<div class="sky-orb"></div><div class="hills"></div>
+
+<!-- AUTH -->
+<div id="auth" class="screen hidden">
+  <div class="hero"><div class="title">Ma Sói</div><div class="mut" style="font-size:18px">Làng có sói. Ai là sói?</div><div id="authArt"></div></div>
+  <div class="panel">
+    <div class="tabs"><button id="tabLogin" class="on">Đăng nhập</button><button id="tabReg" class="ghost">Tạo nhân vật</button></div>
+    <form class="form" id="authForm" autocomplete="on">
+      <input id="aName" placeholder="Tên nhân vật" maxlength="16" autocomplete="username" required>
+      <input id="aPass" type="password" placeholder="Mật khẩu" maxlength="64" autocomplete="current-password" required>
+      <input id="aPass2" type="password" placeholder="Nhập lại mật khẩu" maxlength="64" autocomplete="new-password" class="hidden">
+      <button id="aBtn">Vào làng</button>
+      <div class="err" id="aErr"></div>
+      <small class="mut" id="aNote">Chưa có nhân vật? Bấm "Tạo nhân vật" để đăng ký và chọn trang phục.</small>
+    </form>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="home" class="screen hidden">
+  <div class="topbar"><div class="title">Ma Sói</div><div style="display:flex;gap:8px;align-items:center"><span class="chip" id="meChip"></span><button class="ghost" id="logout">Đăng xuất</button></div></div>
+  <div class="grid">
+    <div class="menu">
+      <button class="ghost" data-go="wardrobe">👕 Tủ đồ & Trang phục</button>
+      <button class="ghost" data-go="roles">📖 Bách khoa vai trò</button>
+      <div class="panel"><h3>🏆 Bảng xếp hạng</h3><div id="board" class="mut">Chưa có ai chơi...</div></div>
+    </div>
+    <div class="stage"><div id="homeArt"></div><div class="plinth"></div><div class="nameplate" id="homeName"></div><div class="mut" id="homeStats" style="margin-top:6px;font-weight:700"></div></div>
+    <div class="panel">
+      <button class="bigplay" id="quick">▶ CHƠI NGAY</button>
+      <div style="display:flex;gap:8px;margin-bottom:8px"><button class="blue" id="create" style="flex:1">+ Tạo phòng</button></div>
+      <form style="display:flex;gap:8px" id="joinForm"><input id="code" placeholder="Mã phòng" maxlength="4" style="flex:1;text-transform:uppercase"><button class="ghost">Vào</button></form>
+      <div class="err" id="hErr"></div>
+      <h3 style="margin-top:6px">Phòng đang chờ</h3>
+      <div class="lobbies" id="lobbies"></div>
+    </div>
+  </div>
+</div>
+
+<!-- WARDROBE -->
+<div id="wardrobe" class="screen hidden">
+  <div class="topbar"><div class="title" id="wTitle">Tủ đồ</div><div style="display:flex;gap:8px"><button class="ghost" id="wRandom">🎲 Ngẫu nhiên</button><button class="ghost" id="wCancel">Hủy</button><button id="wSave">Lưu trang phục</button></div></div>
+  <div class="grid">
+    <div class="panel stage"><div id="wArt"></div><div class="plinth"></div><div id="wGrave" style="margin-top:14px"></div></div>
+    <div class="panel"><div class="slots" id="wSlots"></div><div class="items" id="wItems"></div></div>
+  </div>
+</div>
+
+<!-- ROLES -->
+<div id="roles" class="screen hidden">
+  <div class="topbar"><div class="title">Vai trò</div><button class="ghost" data-go="home">← Quay lại</button></div>
+  <div id="roleList"></div>
+</div>
+
+<!-- GAME -->
+<div id="game" class="hidden">
+  <div class="gtop">
+    <span class="phase" id="phase"></span>
+    <div class="tbar"><i id="tfill"></i></div><span class="tnum" id="tnum"></span>
+    <span class="chip" style="padding:4px 14px">Phòng <b id="roomCode" style="letter-spacing:3px"></b></span>
+    <button class="ghost" id="leave">Rời phòng</button>
+  </div>
+  <div class="col" id="colL"></div>
+  <div class="center">
+    <div class="banner hidden" id="banner"></div>
+    <div class="panel chat"><div class="log" id="log"></div>
+      <form id="chatForm"><input id="msg" placeholder="Nhắn tin..." maxlength="200" autocomplete="off"><button>Gửi</button></form></div>
+    <div class="panel bar"><div class="myrole" id="myRole"></div><div class="acts" id="acts"></div><div class="hint" id="hint"></div></div>
+  </div>
+  <div class="col right" id="colR"></div>
+</div>
+
+<div id="modal" class="modal hidden"></div>
+<div id="fx" class="hidden"></div>
+
+<script src="/shared.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
+const { ROLES, TEAM, ABIL, ITEMS, SLOTS, SETS, avatarSvg, graveSvg, itemSvg } = AV;
+const ri = role => role ? `<span class="ri" style="--c:${TEAM[ROLES[role].t].c}" title="${ROLES[role].n}">${ROLES[role].i}</span>` : '';
+const teamTag = t => `<span class="tm" style="background:${TEAM[t].c}">${TEAM[t].n}</span>`;
+const WIN = { village:'🏡 Dân làng chiến thắng!', wolf:'🐺 Ma sói chiến thắng!', fool:'🃏 Thằng ngốc chiến thắng!', headhunter:'🎯 Thợ săn đầu người chiến thắng!', serial_killer:'🔪 Sát nhân chiến thắng!', arsonist:'🔥 Kẻ phóng hỏa chiến thắng!', none:'⚰️ Không ai sống sót...' };
+
+// ---------- session / api ----------
+let token = sessionStorage.getItem('ms_t') || localStorage.getItem('ms_t'), ME = null;
+async function api(body) {
+  const res = await fetch('/api', { method:'POST', headers:{ 'x-token': token || '' }, body: JSON.stringify(body) });
+  const r = await res.json();
+  if (res.status === 401) { logout(true); throw r.error; }
+  if (r.error) throw r.error;
+  return r;
+}
+function setToken(t) { token = t; sessionStorage.setItem('ms_t', t); localStorage.setItem('ms_t', t); }
+function logout(silent) {
+  if (!silent) api({ action:'logout' }).catch(() => {});
+  token = null; ME = null; sessionStorage.removeItem('ms_t'); localStorage.removeItem('ms_t');
+  es?.close(); show('auth');
+}
+function show(id) {
+  for (const s of ['auth', 'home', 'wardrobe', 'roles', 'game']) $(s).classList.toggle('hidden', s !== id);
+  if (id !== 'game') document.body.className = '';
+  if (id === 'home') renderHome();
+  if (id === 'roles') renderRoles();
+  window.scrollTo(0, 0);
+}
+document.addEventListener('click', e => { const g = e.target.closest('[data-go]')?.dataset.go; if (g === 'wardrobe') openWardrobe(); else if (g) show(g); });
+
+// ---------- auth ----------
+let regMode = false;
+$('authArt').innerHTML = avatarSvg(AV.randomAvatar());
+function setReg(on) {
+  regMode = on;
+  $('tabLogin').className = on ? 'ghost' : 'on'; $('tabReg').className = on ? 'on' : 'ghost';
+  $('aPass2').classList.toggle('hidden', !on);
+  $('aPass').autocomplete = on ? 'new-password' : 'current-password';
+  $('aBtn').textContent = on ? 'Tiếp tục → Chọn trang phục' : 'Vào làng';
+  $('aNote').textContent = on ? 'Tên 3–16 ký tự, mật khẩu ít nhất 6 ký tự.' : 'Chưa có nhân vật? Bấm "Tạo nhân vật" để đăng ký và chọn trang phục.';
+  $('aErr').textContent = '';
+}
+$('tabLogin').onclick = () => setReg(false);
+$('tabReg').onclick = () => setReg(true);
+$('authForm').onsubmit = async e => {
+  e.preventDefault(); $('aErr').textContent = '';
+  const name = $('aName').value.trim(), password = $('aPass').value;
+  try {
+    if (regMode) {
+      if (password !== $('aPass2').value) throw 'Mật khẩu nhập lại không khớp';
+      const r = await api({ action:'register', name, password, avatar: AV.randomAvatar() });
+      setToken(r.token); ME = r.user; openWardrobe(true);
+    } else {
+      const r = await api({ action:'login', name, password });
+      setToken(r.token); ME = r.user; afterLogin();
+    }
+    $('aPass').value = $('aPass2').value = '';
+  } catch (err) { $('aErr').textContent = err; }
+};
+function afterLogin() { ME.room ? connect() : show('home'); }
+
+// ---------- home ----------
+let lobbyTimer;
+async function renderHome() {
+  $('meChip').innerHTML = avatarSvg(ME.avatar) + esc(ME.name);
+  $('homeArt').innerHTML = avatarSvg(ME.avatar);
+  $('homeName').textContent = ME.name;
+  $('homeStats').textContent = `🎮 ${ME.stats.games} trận · 🏆 ${ME.stats.wins} thắng`;
+  $('hErr').textContent = '';
+  clearInterval(lobbyTimer);
+  const load = async () => {
+    if ($('home').classList.contains('hidden')) return clearInterval(lobbyTimer);
+    try {
+      const { lobbies } = await api({ action:'lobbies' });
+      $('lobbies').innerHTML = lobbies.length ? lobbies.map(l => `<div class="lob"><span><b>${l.code}</b> · ${esc(l.host)} · ${l.count}/16 👥</span><button class="ghost" data-join="${l.code}">Vào</button></div>`).join('')
+        : '<div class="mut">Chưa có phòng nào. Tạo phòng mới đi!</div>';
+    } catch {}
+  };
+  load(); lobbyTimer = setInterval(load, 4000);
+  api({ action:'leaderboard' }).then(({ top }) => {
+    if (top.length) $('board').innerHTML = top.map((t, i) => `<div class="lb">${['🥇','🥈','🥉'][i] || i + 1}${avatarSvg(t.avatar)}<b>${esc(t.name)}</b><span>${t.wins}🏆/${t.games}</span></div>`).join('');
+  }).catch(() => {});
+}
+const enter = body => api(body).then(connect).catch(e => $('hErr').textContent = e);
+$('quick').onclick = () => enter({ action:'quick' });
+$('create').onclick = () => enter({ action:'create' });
+$('joinForm').onsubmit = e => { e.preventDefault(); enter({ action:'join', code: $('code').value.trim().toUpperCase() }); };
+$('lobbies').onclick = e => { const c = e.target.dataset.join; if (c) enter({ action:'join', code: c }); };
+$('logout').onclick = () => logout();
+
+// ---------- wardrobe ----------
+let draft, slot = 'sets', firstTime = false;
+// a set replaces all accessories, keeping the player's own face/skin/hair unless the set overrides them
+const withSet = k => ({ ...draft, hat:'none', glasses:'none', mask:'none', fg:'none', bg:'none', ...SETS[k].a });
+function openWardrobe(first) {
+  firstTime = !!first; draft = { ...ME.avatar }; slot = 'sets';
+  $('wTitle').textContent = first ? 'Tạo nhân vật' : 'Tủ đồ';
+  $('wCancel').classList.toggle('hidden', firstTime);
+  show('wardrobe'); renderWardrobe();
+}
+function renderWardrobe() {
+  $('wArt').innerHTML = avatarSvg(draft);
+  $('wGrave').innerHTML = `<div class="mut" style="font-weight:700">Bia mộ khi chết</div><div style="width:90px;margin:0 auto">${graveSvg(draft.grave)}</div>`;
+  $('wSlots').innerHTML = [['sets', '✨ Bộ trang phục'], ...SLOTS].map(([k, n]) => `<button class="${k === slot ? '' : 'ghost'}" data-slot="${k}">${n}</button>`).join('');
+  if (slot === 'sets') {
+    $('wItems').innerHTML = Object.entries(SETS).map(([k, s]) => `<div class="item" data-set="${k}">${avatarSvg(withSet(k))}${s.n}</div>`).join('');
+  } else if (slot === 'skin' || slot === 'hairColor') {
+    $('wItems').innerHTML = Object.entries(ITEMS[slot]).map(([k, c]) => `<div class="item ${draft[slot] === k ? 'sel' : ''}" data-k="${k}"><div class="swatch" style="background:${c}"></div>${k}</div>`).join('');
+  } else {
+    $('wItems').innerHTML = Object.entries(ITEMS[slot]).map(([k, it]) => `<div class="item ${draft[slot] === k ? 'sel' : ''}" data-k="${k}">${slot === 'grave' ? graveSvg(k) : avatarSvg({ ...draft, [slot]: k })}${it.n}</div>`).join('');
+  }
+}
+$('wSlots').onclick = e => { const s = e.target.dataset.slot; if (s) { slot = s; renderWardrobe(); } };
+$('wItems').onclick = e => {
+  const it = e.target.closest('.item'); if (!it) return;
+  if (it.dataset.set) draft = withSet(it.dataset.set); else draft[slot] = it.dataset.k;
+  renderWardrobe();
+};
+$('wRandom').onclick = () => { draft = AV.randomAvatar(); renderWardrobe(); };
+$('wCancel').onclick = () => show('home');
+$('wSave').onclick = async () => { ME = (await api({ action:'avatar', avatar: draft })).user; show('home'); };
+
+// ---------- roles encyclopedia ----------
+function renderRoles() {
+  $('roleList').innerHTML = Object.keys(TEAM).map(t => `<h3 style="margin:18px 0 10px">${teamTag(t)} ${TEAM[t].n}</h3><div class="rolegrid">` +
+    Object.entries(ROLES).filter(([, r]) => r.t === t).map(([k, r]) => `<div class="panel rc">${ri(k)}<div><b>${r.n}</b><small>${r.d}</small>
+      <div class="abl">${(r.ab || []).map(a => `<span>${ABIL[a.k][1]} ${ABIL[a.k][0]}${a.uses ? ` ×${a.uses}` : ''} · ${a.ph === 'night' ? '🌙' : a.ph === 'day' ? '☀️' : '🌗'}</span>`).join('')}</div></div></div>`).join('') + '</div>').join('');
+}
+
+// ---------- game: connection ----------
+let es = null, S = null, endAt = 0, total = 1, lastPhase = null, mode = null, lastSeq = null, resultOpen = false;
+function connect() {
+  es?.close(); lastSeq = null; S = null; mode = null; resultOpen = false;
+  es = new EventSource(`/events?t=${encodeURIComponent(token)}`);
+  es.onmessage = e => {
+    const first = !S;
+    S = JSON.parse(e.data);
+    if (S.phase !== lastPhase) { lastPhase = S.phase; total = Math.max(1, S.left); mode = null; }
+    endAt = S.left ? Date.now() + S.left : 0;
+    if (first) { show('game'); if (S.phase === 'end') resultOpen = true; }
+    queueFx(); render();
+  };
+  es.onerror = () => { if (es.readyState === 2) { es = null; api({ action:'me' }).then(r => { ME = r.user; ME.room ? connect() : show('home'); }).catch(() => {}); } };
+}
+const act = body => api({ ...body, code: S.code }).catch(err => flash(err));
+function flash(t) { $('hint').textContent = '⚠️ ' + t; $('hint').style.color = '#ff8a80'; setTimeout(() => { $('hint').style.color = ''; S && render(); }, 2200); }
+$('leave').onclick = async () => {
+  if (S && !['lobby', 'end'].includes(S.phase) && !confirm('Ván đang diễn ra, bạn chắc chắn muốn rời?')) return;
+  await api({ action:'leave' }).catch(() => {}); es?.close(); es = null; S = null; ME = (await api({ action:'me' })).user; show('home');
+};
+$('chatForm').onsubmit = e => { e.preventDefault(); const t = $('msg').value; $('msg').value = ''; if (t.trim()) act({ action:'chat', text:t }); };
+
+// ---------- game: render ----------
+const PH = { lobby:'🏠 Sảnh chờ', night:'🌙 Đêm', day:'☀️ Ngày', vote:'⚖️ Bỏ phiếu', end:'🏁 Kết thúc' };
+const isWolf = p => p.role && ROLES[p.role].t === 'wolf';
+function targetable(p) {
+  if (!S || ['lobby', 'end'].includes(S.phase)) return false;
+  const me = S.players.find(x => x.id === S.me.id);
+  if (mode) {
+    const ab = mode.ab;
+    if (ab.dead ? p.alive || (p.role && ROLES[p.role].t !== 'village') : !p.alive) return false;
+    if (p.id === S.me.id && !ab.self) return false;
+    if (ab.nw && isWolf(p) && isWolf(me)) return false;
+    return true;
+  }
+  return S.phase === 'vote' && S.me.alive && p.alive && p.id !== S.me.id;
+}
+function slotHtml(p, i) {
+  if (!p) return `<div class="slot empty">${avatarSvg(AV.DEFAULT_AVATAR)}<span class="nm">${i + 1}</span></div>`;
+  const votes = Object.values(S.votes).filter(t => t === p.id).length;
+  const myVote = S.votes[S.me.id] === p.id, picked = mode?.picked.includes(p.id);
+  const tags = [p.id === S.me.lover || (S.me.lover && p.id === S.me.id) ? '💘' : '', p.id === S.me.mark ? '🎯' : '', p.id === S.me.hhTarget ? '🎯' : '', p.bot ? '🤖' : ''].join('');
+  return `<div class="slot ${p.alive ? '' : 'dead'} ${p.id === S.me.id ? 'me' : ''} ${targetable(p) ? 'tg' : ''} ${picked || myVote ? 'pk' : ''}" data-id="${p.id}">
+    <span class="no">${i + 1}</span>${p.role ? `<span class="rb">${ri(p.role)}</span>` : ''}${votes ? `<span class="vt">${votes}</span>` : ''}${tags ? `<span class="tag">${tags}</span>` : ''}
+    ${p.alive ? avatarSvg(p.avatar) : graveSvg(p.avatar.grave)}
+    <span class="nm">${esc(p.name)}</span>
+    ${S.phase === 'lobby' && S.host === S.me.id && p.id !== S.me.id ? `<button class="ghost kick" data-kick="${p.id}">✕</button>` : ''}
+    ${S.phase === 'lobby' && S.host === p.id ? '<span class="tag" style="top:-4px;left:44%">👑</span>' : ''}</div>`;
+}
+function hint() {
+  const r = S.me.role;
+  if (S.phase === 'lobby') return S.host === S.me.id ? `Mời bạn bè vào mã ${S.code} hoặc thêm bot. Cần 4–16 người.` : 'Chờ chủ phòng bắt đầu...';
+  if (S.phase === 'end') return S.host === S.me.id ? 'Bấm "Chơi lại" để mở ván mới.' : 'Chờ chủ phòng mở ván mới...';
+  if (!S.me.alive) return '👻 Bạn đã chết. Bạn có thể chat với những người chết khác.';
+  if (mode) return `${ABIL[mode.ab.k][1]} Chọn ${mode.ab.n - mode.picked.length} người để ${ABIL[mode.ab.k][0].toLowerCase()}`;
+  if (S.blocked) return '😱 Bạn đang gặp ác mộng, đêm nay không thể hành động.';
+  if (S.phase === 'vote') return 'Bấm vào người bạn nghi ngờ để bỏ phiếu treo cổ (có thể đổi phiếu).';
+  if (S.phase === 'day') return 'Thảo luận trong chat. Sắp đến giờ bỏ phiếu...';
+  if (S.phase === 'night') return S.abilities.some(a => a.ok) ? (S.witchTarget ? `🐺 Sói đang nhắm ${S.witchTarget}. ` : '') + 'Chọn kỹ năng bên trên để hành động.' : '💤 Bạn đang ngủ...';
+  return '';
+}
+function render() {
+  if (!S) return;
+  const me = S.players.find(p => p.id === S.me.id);
+  document.body.className = ['day', 'vote'].includes(S.phase) ? 'day' : '';
+  $('phase').textContent = PH[S.phase] + (['night', 'day', 'vote'].includes(S.phase) ? ' ' + S.day : '');
+  $('roomCode').textContent = S.code;
+  const slots = Array.from({ length: 16 }, (_, i) => slotHtml(S.players[i], i));
+  $('colL').innerHTML = slots.slice(0, 8).join('');
+  $('colR').innerHTML = slots.slice(8).join('');
+
+  const role = S.me.role;
+  $('myRole').innerHTML = role ? `${ri(role)}<span>${ROLES[role].n}</span>` : `<span class="ri">❔</span><span>Chưa có vai</span>`;
+  const acts = [];
+  if (['lobby', 'end'].includes(S.phase) && S.host === S.me.id) {
+    acts.push(`<button data-a="start" ${S.players.length < 4 ? 'disabled' : ''}>${S.phase === 'end' ? '🔁 Chơi lại' : '▶ Bắt đầu'} (${S.players.length})</button>`);
+    if (S.phase === 'lobby') acts.push(`<button class="ghost" data-a="addbot" ${S.players.length >= 16 ? 'disabled' : ''}>🤖 Thêm bot</button>`);
+  }
+  if (S.phase === 'end') acts.push(`<button class="ghost" data-a="result">📊 Kết quả</button>`);
+  S.abilities.forEach((a, i) => {
+    if (!a.ok) return;
+    acts.push(`<button class="${mode?.ab.k === a.k ? 'on' : 'blue'}" data-ab="${i}">${ABIL[a.k][1]} ${ABIL[a.k][0]}${a.left != null ? ` (${a.left})` : ''}</button>`);
+  });
+  if (S.canPass) acts.push(`<button class="ghost" data-a="pass">Bỏ qua</button>`);
+  $('acts').innerHTML = acts.join('');
+  $('hint').textContent = hint();
+  $('leave').textContent = ['lobby', 'end'].includes(S.phase) ? 'Rời phòng' : 'Thoát';
+
+  $('banner').classList.toggle('hidden', S.phase !== 'end');
+  $('banner').textContent = WIN[S.winner] || '';
+
+  const log = $('log'), stick = log.scrollTop + log.clientHeight >= log.scrollHeight - 40;
+  const num = id => S.players.findIndex(p => p.id === id) + 1;
+  log.innerHTML = S.msgs.filter(m => m.text).map(m => `<div class="m ${m.ch}">${m.name ? `<b>${m.ch === 'wolf' ? '🐺 ' : m.ch === 'dead' ? '👻 ' : ''}${num(m.from) || ''} ${esc(m.name)}:</b> ` : ''}${esc(m.text)}</div>`).join('');
+  if (stick) log.scrollTop = log.scrollHeight;
+  const night = S.phase === 'night', canTalk = !['night'].includes(S.phase) || !S.me.alive || isWolf(me) || S.me.role === 'medium';
+  $('msg').disabled = !canTalk;
+  $('msg').placeholder = !canTalk ? 'Ban đêm làng im lặng... 🤫' : !S.me.alive && !['lobby', 'end'].includes(S.phase) ? 'Chat với người chết...' : night && isWolf(me) ? 'Thì thầm với bầy sói...' : night ? 'Trò chuyện với người chết...' : 'Nhắn tin...';
+  renderResult();
+}
+function clickPlayer(id) {
+  const p = S.players.find(x => x.id === id);
+  if (!p || !targetable(p)) return;
+  if (!mode) return act({ action:'vote', target:id });
+  mode.picked = mode.picked.includes(id) ? mode.picked.filter(x => x !== id) : [...mode.picked, id];
+  if (mode.picked.length === mode.ab.n) { act({ action:'act', k: mode.ab.k, targets: mode.picked }); mode = null; }
+  render();
+}
+for (const c of ['colL', 'colR']) $(c).onclick = e => {
+  const k = e.target.dataset.kick;
+  if (k) return act({ action:'kick', target:k });
+  const s = e.target.closest('.slot[data-id]'); if (s) clickPlayer(s.dataset.id);
+};
+$('acts').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.ab) {
+    const ab = S.abilities[+b.dataset.ab];
+    if (ab.n === 0) return act({ action:'act', k: ab.k, targets: [] });
+    mode = mode?.ab.k === ab.k ? null : { ab, picked: [] };
+    return render();
+  }
+  const a = b.dataset.a;
+  if (a === 'result') { resultOpen = true; renderResult(); }
+  else if (a) act({ action:a });
+};
+$('myRole').onclick = () => {
+  const r = S?.me.role; if (!r) return;
+  $('modal').innerHTML = `<div class="panel"><div class="rc">${ri(r).replace('class="ri"', 'class="ri" style="font-size:40px;--c:' + TEAM[ROLES[r].t].c + '"')}<div><h2 style="text-align:left">${ROLES[r].n}</h2>${teamTag(ROLES[r].t)}<small style="font-size:16px;margin-top:8px">${ROLES[r].d}</small></div></div><div style="text-align:center;margin-top:14px"><button data-close>Đóng</button></div></div>`;
+  $('modal').classList.remove('hidden');
+};
+$('modal').onclick = e => {
+  if (e.target.dataset.close != null || e.target === $('modal')) { $('modal').classList.add('hidden'); resultOpen = false; }
+  if (e.target.dataset.a === 'start') act({ action:'start' });
+};
+setInterval(() => {
+  const left = endAt ? Math.max(0, endAt - Date.now()) : 0;
+  $('tnum').textContent = endAt ? Math.ceil(left / 1000) + 's' : '';
+  $('tfill').style.width = endAt ? (left / total * 100) + '%' : '0';
+}, 250);
+
+// ---------- results ----------
+function renderResult() {
+  const m = $('modal');
+  if (!(resultOpen && S.phase === 'end' && !fxBusy)) { if (m.dataset.kind === 'result') { m.classList.add('hidden'); m.dataset.kind = ''; } return; }
+  const alive = S.players.filter(p => p.alive).length;
+  m.dataset.kind = 'result';
+  m.innerHTML = `<div class="panel"><h2>${WIN[S.winner]}</h2>
+    <div class="stats"><span>📅 ${S.day} ngày đêm</span><span>👥 ${S.players.length} người</span><span>❤️ ${alive} sống sót</span><span>💀 ${S.players.length - alive} đã chết</span></div>
+    <div class="res">${[...S.players].sort((a, b) => b.won - a.won).map(p => `<div class="rp ${p.won ? 'win' : ''}">
+      ${p.alive ? avatarSvg(p.avatar) : graveSvg(p.avatar.grave)}<b>${esc(p.name)}</b>${ri(p.role)} ${ROLES[p.role].n}<br>${teamTag(ROLES[p.role].t)}
+      <div class="mut">${p.alive ? '❤️ Sống sót' : `💀 ${p.death.night ? 'Đêm' : 'Ngày'} ${p.death.day}: ${esc(p.death.how)}`}</div>
+      <div style="font-weight:800;color:${p.won ? 'var(--green)' : 'var(--mut)'}">${p.won ? '🏆 THẮNG' : 'Thua'}</div></div>`).join('')}</div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:14px">${S.host === S.me.id ? '<button data-a="start">🔁 Chơi lại</button>' : ''}<button class="ghost" data-close>Đóng</button></div></div>`;
+  m.classList.remove('hidden');
+}
+
+// ---------- ability animations ----------
+const claws = () => [-28, -18, -8].map((r, i) => `<div class="claw" style="--r:${r}deg;top:${30 + i * 16}%;animation-delay:${.15 + i * .1}s"></div>`).join('');
+const bubbles = c => Array.from({ length: 16 }, () => `<div class="bub" style="left:${5 + Math.random() * 90}%;background:${c};animation-delay:${Math.random() * .8}s;box-shadow:0 0 10px ${c}"></div>`).join('');
+const glow = c => `<div class="glow" style="background:radial-gradient(${c},transparent 65%)"></div>`;
+const FX = {
+  night: { big: '🌙 Màn đêm buông xuống', bg: '#000' }, day: { big: '☀️ Trời sáng', bg: '#ffcf5a' }, vote: { big: '⚖️ Bỏ phiếu!', bg: '#a34d10' }, start: { big: '🎭 Chia vai!', bg: '#4b2e83' },
+  kill: { bg: '#600', layer: claws, cap: '🐺 Bầy sói đã chọn con mồi' }, bite: { bg: '#800', layer: claws, shake: 1, cls: 'dying' },
+  stab: { bg: '#500', layer: claws, shake: 1, cls: 'dying' }, avenge: { bg: '#600', layer: claws, shake: 1, cls: 'dying' },
+  poisoned: { bg: '#2a3a10', layer: () => bubbles('#9cff4a'), cls: 'sick' }, fire: { bg: '#a33a00', layer: () => bubbles('#ff7a1c'), shake: 1, cls: 'dying' },
+  lynch: { bg: '#222', layer: () => '<div class="rope"></div>', cls: 'swing' }, shot: { bg: '#4a3a1c', layer: () => '<div class="arrow"></div>', shake: 1, cls: 'dying' },
+  water: { bg: '#1f4f72', layer: () => bubbles('#8fd3ff'), cls: 'dying' }, heartbreak: { bg: '#6b2a52', layer: () => bubbles('#ff6b8b'), cls: 'dying' },
+  see: { bg: '#4b2e83', layer: () => glow('#b48cff88'), cls: 'flip' }, aura: { bg: '#2b4b83', layer: () => glow('#8cffe988'), cls: 'flip' },
+  compare: { bg: '#3a3a3a', layer: () => glow('#ffffff55') }, enchant: { bg: '#3a1f55', layer: () => glow('#d36bff88') },
+  protect: { bg: '#1f4f72', layer: () => '<div class="ring"></div><div class="ring" style="animation-delay:.5s"></div>' },
+  guard: { bg: '#1f4f72', layer: () => '<div class="ring"></div><div class="ring" style="animation-delay:.5s;border-color:#ffd84a"></div>' },
+  heal: { bg: '#1f6a3a', layer: () => bubbles('#6dff8a') }, poison: { bg: '#3a1f55', layer: () => bubbles('#b35cff') },
+  revive: { bg: '#fff3b0', layer: () => bubbles('#ffe36e') + glow('#fff6c288') }, link: { bg: '#6b2a52', layer: () => bubbles('#ff6b8b') },
+  flower: { bg: '#6b2a52', layer: () => bubbles('#f78fb3') }, visit: { bg: '#6b1a2a', layer: () => glow('#ff4a6a66') },
+  mark: { bg: '#5a1a1a', layer: () => glow('#ff4a4a66') }, reveal: { bg: '#5a4a10', layer: () => glow('#ffd84a88') },
+  nightmare: { bg: '#120820', layer: () => bubbles('#5b2d82'), shake: 1 }, douse: { bg: '#5a3a10', layer: () => bubbles('#ffb84a') },
+  ignite: { bg: '#a33a00', layer: () => bubbles('#ff5a1c'), shake: 1 },
+};
+let fxQ = [], fxBusy = false;
+function playFx() {
+  if (fxBusy || !fxQ.length) return;
+  fxBusy = true;
+  const m = fxQ.shift(), f = FX[m.fx], el = $('fx');
+  const art = m.av ? avatarSvg(m.av) : m.role ? ri(m.role) : '';
+  el.innerHTML = `<div class="fl" style="background:radial-gradient(${f.bg},transparent 70%)"></div>` + (f.big ? `<div class="big">${f.big}${m.fx === 'night' || m.fx === 'day' ? ' ' + S.day : ''}</div>` :
+    `<div class="card ${f.cls || ''}">${f.layer ? f.layer() : ''}${art}<div class="cap">${esc(f.cap || m.text)}</div></div>`);
+  el.classList.remove('hidden');
+  if (f.shake) { document.body.classList.remove('shake'); void document.body.offsetWidth; document.body.classList.add('shake'); }
+  setTimeout(() => { el.classList.add('hidden'); fxBusy = false; playFx(); render(); }, f.big ? 1500 : 2300);
+}
+// animate only messages newer than what this tab already saw (no replay on reconnect)
+function queueFx() {
+  const fresh = lastSeq === null ? [] : S.msgs.filter(m => m.n > lastSeq);
+  if (S.msgs.length) lastSeq = S.msgs[S.msgs.length - 1].n; else lastSeq ??= 0;
+  for (const m of fresh) {
+    if (m.fx === 'end') resultOpen = true;
+    else if (FX[m.fx]) fxQ.push(m);
+  }
+  playFx();
+}
+
+// ---------- boot ----------
+(async () => {
+  if (!token) return show('auth');
+  try { ME = (await api({ action:'me' })).user; afterLogin(); } catch { show('auth'); }
+})();
+</script>
+</body>
+</html>

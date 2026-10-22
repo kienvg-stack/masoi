@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Ma Sói Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root { --bg:#0f1220; --panel:#181c30; --line:#2a3050; --txt:#e8eaf6; --mut:#8e94b8; --acc:#ffbf3c; --red:#ef5350; --green:#4cc36a; }
+* { box-sizing:border-box; }
+body { margin:0; font-family:'Be Vietnam Pro',system-ui,sans-serif; background:var(--bg); color:var(--txt); font-size:14px; }
+button { font:inherit; font-weight:600; border:0; border-radius:8px; padding:7px 12px; cursor:pointer; background:var(--acc); color:#2a1a05; }
+button.ghost { background:transparent; color:var(--txt); border:1px solid var(--line); }
+button.red { background:var(--red); color:#fff; }
+input { font:inherit; padding:9px 12px; border-radius:8px; border:1px solid var(--line); background:#0b0e1a; color:var(--txt); }
+.hidden { display:none !important; }
+.login { max-width:360px; margin:12vh auto; display:grid; gap:10px; background:var(--panel); padding:26px; border-radius:14px; border:1px solid var(--line); }
+.login h1 { margin:0 0 6px; font-size:22px; }
+.err { color:#ff8a80; min-height:1.2em; }
+header { display:flex; align-items:center; gap:16px; padding:12px 20px; border-bottom:1px solid var(--line); background:var(--panel); position:sticky; top:0; z-index:2; flex-wrap:wrap; }
+header b { font-size:18px; } nav { display:flex; gap:4px; flex:1; flex-wrap:wrap; }
+nav button { background:transparent; color:var(--mut); } nav button.on { background:#262c4a; color:var(--txt); }
+main { padding:20px; max-width:1200px; margin:0 auto; }
+.cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:12px; margin-bottom:20px; }
+.card { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:16px; }
+.card .v { font-size:30px; font-weight:800; } .card .l { color:var(--mut); }
+table { width:100%; border-collapse:collapse; background:var(--panel); border-radius:12px; overflow:hidden; }
+th, td { padding:8px 10px; text-align:left; border-bottom:1px solid var(--line); vertical-align:middle; }
+th { color:var(--mut); font-weight:600; font-size:12px; background:#141829; }
+td svg { width:30px; height:42px; vertical-align:middle; }
+.pill { display:inline-block; padding:1px 8px; border-radius:20px; font-size:12px; font-weight:600; background:#262c4a; }
+.pill.red { background:#5a1f25; color:#ffb3ad; } .pill.green { background:#1d4a2a; color:#a6f0b8; } .pill.gold { background:#4a3a10; color:#ffd77a; }
+.row { display:flex; gap:6px; flex-wrap:wrap; }
+.roles { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:8px; }
+.roles label { display:flex; gap:8px; align-items:center; background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:8px 10px; cursor:pointer; }
+.toolbar { display:flex; gap:10px; align-items:center; margin-bottom:12px; flex-wrap:wrap; }
+h2 { margin:0 0 12px; font-size:18px; }
+.bar { display:flex; height:22px; border-radius:6px; overflow:hidden; background:#0b0e1a; }
+.bar span { display:grid; place-items:center; font-size:11px; font-weight:700; color:#111; }
+</style>
+</head>
+<body>
+<form class="login" id="login">
+  <h1>🛡️ Quản trị Ma Sói</h1>
+  <div style="color:var(--mut)">Chỉ tài khoản admin được truy cập.</div>
+  <input id="u" placeholder="Tên đăng nhập" autocomplete="username" required>
+  <input id="p" type="password" placeholder="Mật khẩu" autocomplete="current-password" required>
+  <button>Đăng nhập</button>
+  <div class="err" id="lerr"></div>
+</form>
+
+<div id="app" class="hidden">
+  <header><b>🛡️ Ma Sói Admin</b>
+    <nav id="nav"><button data-t="overview" class="on">Tổng quan</button><button data-t="users">Người chơi</button><button data-t="rooms">Phòng chơi</button><button data-t="settings">Vai trò & Cài đặt</button><button data-t="games">Lịch sử trận</button></nav>
+    <span id="who" style="color:var(--mut)"></span><button class="ghost" id="out">Đăng xuất</button></header>
+  <main id="main"></main>
+</div>
+
+<script src="/shared.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
+const { ROLES, TEAM } = AV;
+let token = sessionStorage.getItem('adm_t'), tab = 'overview';
+
+async function api(body) {
+  const res = await fetch('/admin-api', { method:'POST', headers:{ 'x-token': token || '' }, body: JSON.stringify(body) });
+  const r = await res.json();
+  if (res.status === 401) { logout(); throw r.error; }
+  if (r.error) throw r.error;
+  return r;
+}
+function logout() { token = null; sessionStorage.removeItem('adm_t'); $('app').classList.add('hidden'); $('login').classList.remove('hidden'); }
+$('out').onclick = logout;
+$('login').onsubmit = async e => {
+  e.preventDefault(); $('lerr').textContent = '';
+  try {
+    const r = await api({ action:'login', name: $('u').value, password: $('p').value });
+    token = r.token; sessionStorage.setItem('adm_t', token); $('p').value = ''; start(r.name);
+  } catch (err) { $('lerr').textContent = err; }
+};
+function start(name) { $('login').classList.add('hidden'); $('app').classList.remove('hidden'); $('who').textContent = name || ''; load(); }
+$('nav').onclick = e => { const t = e.target.dataset.t; if (!t) return; tab = t; [...$('nav').children].forEach(b => b.classList.toggle('on', b.dataset.t === t)); load(); };
+
+const WIN = { village:['Dân làng','#4cc36a'], wolf:['Ma sói','#ef5350'], fool:['Thằng ngốc','#d9a521'], headhunter:['Thợ săn đầu người','#d9a521'], serial_killer:['Sát nhân','#b06ad9'], arsonist:['Phóng hỏa','#ff8a3c'], none:['Không ai','#888'] };
+const date = t => new Date(t).toLocaleString('vi-VN');
+
+async function load() {
+  const m = $('main');
+  try {
+    if (tab === 'overview') {
+      const o = await api({ action:'overview' });
+      const total = Object.values(o.wins).reduce((a, b) => a + b, 0) || 1;
+      m.innerHTML = `<div class="cards">
+        <div class="card"><div class="v">${o.users}</div><div class="l">Tài khoản</div></div>
+        <div class="card"><div class="v">${o.online}</div><div class="l">Đang kết nối</div></div>
+        <div class="card"><div class="v">${o.rooms}</div><div class="l">Phòng đang mở</div></div>
+        <div class="card"><div class="v">${o.playing}</div><div class="l">Ván đang chơi</div></div>
+        <div class="card"><div class="v">${o.games}</div><div class="l">Trận đã lưu</div></div></div>
+        <h2>Tỉ lệ phe thắng</h2><div class="bar">${Object.entries(o.wins).map(([k, n]) => `<span style="width:${n / total * 100}%;background:${WIN[k][1]}" title="${WIN[k][0]}: ${n}">${WIN[k][0]} ${n}</span>`).join('') || '<span style="width:100%;color:var(--mut)">Chưa có trận nào</span>'}</div>`;
+    }
+    if (tab === 'users') {
+      const { users } = await api({ action:'users' });
+      m.innerHTML = `<div class="toolbar"><h2 style="margin:0">Người chơi (${users.length})</h2><input id="q" placeholder="Tìm tên..." oninput="filterUsers()"></div>
+        <table><thead><tr><th></th><th>Tên</th><th>Trạng thái</th><th>Trận / Thắng</th><th>Ngày tạo</th><th>Thao tác</th></tr></thead><tbody id="ub">${users.sort((a, b) => b.created - a.created).map(u => `
+        <tr data-name="${esc(u.name.toLowerCase())}"><td>${AV.avatarSvg(u.avatar)}</td><td><b>${esc(u.name)}</b>${u.room ? ` <span class="pill">phòng ${u.room}</span>` : ''}</td>
+        <td>${u.admin ? '<span class="pill gold">Admin</span> ' : ''}${u.banned ? '<span class="pill red">Bị khóa</span>' : '<span class="pill green">Hoạt động</span>'}</td>
+        <td>${u.stats.games} / ${u.stats.wins}</td><td>${date(u.created)}</td>
+        <td class="row"><button class="ghost" data-act="ban" data-id="${u.id}" data-v="${!u.banned}">${u.banned ? 'Mở khóa' : 'Khóa'}</button>
+          <button class="ghost" data-act="setAdmin" data-id="${u.id}" data-v="${!u.admin}">${u.admin ? 'Bỏ admin' : 'Cấp admin'}</button>
+          <button class="ghost" data-act="resetPassword" data-id="${u.id}">Đặt lại mật khẩu</button>
+          <button class="red" data-act="deleteUser" data-id="${u.id}" data-name="${esc(u.name)}">Xóa</button></td></tr>`).join('')}</tbody></table>`;
+    }
+    if (tab === 'rooms') {
+      const { rooms } = await api({ action:'rooms' });
+      m.innerHTML = `<div class="toolbar"><h2 style="margin:0">Phòng đang mở (${rooms.length})</h2><button class="ghost" onclick="load()">↻ Làm mới</button></div>` + (rooms.length ? `<table><thead><tr><th>Mã</th><th>Trạng thái</th><th>Chủ phòng</th><th>Người chơi</th><th></th></tr></thead><tbody>${rooms.map(r => `
+        <tr><td><b>${r.code}</b></td><td>${{ lobby:'Sảnh chờ', night:'🌙 Đêm', day:'☀️ Ngày', vote:'⚖️ Bỏ phiếu', end:'Kết thúc' }[r.phase]} ${r.day ? r.day : ''}</td><td>${esc(r.host)}</td>
+        <td>${r.players.map(p => `<span class="pill" style="margin:1px;${p.alive === false ? 'opacity:.5;text-decoration:line-through' : ''}">${p.bot ? '🤖' : ''}${esc(p.name)}${p.role ? ' · ' + ROLES[p.role].i : ''}</span>`).join('')} <span style="color:var(--mut)">(${r.online} online)</span></td>
+        <td><button class="red" data-act="closeRoom" data-code="${r.code}">Đóng phòng</button></td></tr>`).join('')}</tbody></table>` : '<div style="color:var(--mut)">Không có phòng nào.</div>');
+    }
+    if (tab === 'settings') {
+      const { settings } = await api({ action:'getSettings' });
+      m.innerHTML = `<h2>Thời gian mỗi giai đoạn (giây)</h2><div class="toolbar">
+        ${[['night', '🌙 Đêm'], ['day', '☀️ Thảo luận'], ['vote', '⚖️ Bỏ phiếu']].map(([k, n]) => `<label>${n} <input type="number" min="10" max="600" id="t_${k}" value="${settings.times[k]}" style="width:90px"></label>`).join('')}</div>
+        <h2>Vai trò được phép xuất hiện</h2><div class="roles">${Object.entries(ROLES).map(([k, r]) => `<label><input type="checkbox" data-role="${k}" ${settings.disabled.includes(k) ? '' : 'checked'} ${['werewolf', 'villager'].includes(k) ? 'disabled' : ''}>
+          <span>${r.i}</span><span>${r.n}<br><small style="color:${TEAM[r.t].c}">${TEAM[r.t].n}</small></span></label>`).join('')}</div>
+        <div style="margin-top:14px"><button id="saveSet">Lưu cài đặt</button> <span id="setMsg" style="color:var(--green)"></span></div>`;
+      $('saveSet').onclick = async () => {
+        await api({ action:'settings', times: { night: $('t_night').value, day: $('t_day').value, vote: $('t_vote').value },
+          disabled: [...document.querySelectorAll('[data-role]')].filter(c => !c.checked).map(c => c.dataset.role) });
+        $('setMsg').textContent = '✓ Đã lưu, áp dụng cho ván tiếp theo';
+      };
+    }
+    if (tab === 'games') {
+      const { games } = await api({ action:'games' });
+      m.innerHTML = `<h2>50 trận gần nhất</h2>` + (games.length ? `<table><thead><tr><th>Thời gian</th><th>Phòng</th><th>Phe thắng</th><th>Số ngày</th><th>Người chơi</th></tr></thead><tbody>${games.map(g => `
+        <tr><td>${date(g.at)}</td><td>${g.code}</td><td><span class="pill" style="background:${WIN[g.winner][1]};color:#111">${WIN[g.winner][0]}</span></td><td>${g.days}</td>
+        <td>${g.players.map(p => `<span class="pill" style="margin:1px;${p.won ? 'outline:1px solid var(--green)' : ''}">${p.bot ? '🤖' : ''}${esc(p.name)} · ${ROLES[p.role].i} ${ROLES[p.role].n}</span>`).join('')}</td></tr>`).join('')}</tbody></table>` : '<div style="color:var(--mut)">Chưa có trận nào.</div>');
+    }
+  } catch (err) { m.textContent = err; }
+}
+function filterUsers() { const q = $('q').value.toLowerCase(); document.querySelectorAll('#ub tr').forEach(tr => tr.classList.toggle('hidden', !tr.dataset.name.includes(q))); }
+
+$('main').onclick = async e => {
+  const b = e.target.closest('button[data-act]'); if (!b) return;
+  const { act, id, v, code, name } = b.dataset;
+  try {
+    if (act === 'deleteUser' && !confirm(`Xóa vĩnh viễn tài khoản "${name}"?`)) return;
+    if (act === 'closeRoom' && !confirm(`Đóng phòng ${code}? Người chơi sẽ bị đưa về sảnh.`)) return;
+    if (act === 'resetPassword' && !confirm('Tạo mật khẩu mới cho tài khoản này?')) return;
+    const r = await api({ action: act, id, code, banned: v === 'true', admin: v === 'true' });
+    if (r.password) prompt('Mật khẩu mới (chỉ hiện một lần, hãy gửi cho người chơi):', r.password);
+    load();
+  } catch (err) { alert(err); }
+};
+
+if (token) api({ action:'overview' }).then(() => start()).catch(() => {});
+</script>
+</body>
+</html>
