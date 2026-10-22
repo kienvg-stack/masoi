@@ -136,6 +136,19 @@ function setup(roles) {
     assert.equal(r.phase, 'night');
     act(0, 'kill', 2); act(3, 'bomb', 7);
     assert(dead(4) && dead(5) && dead(6) && !dead(3));
+    assert(r.msgs.some(m => m.to === r.players[3].id && /Hạ gục: số 5 .*số 6 .*số 7/.test(m.text)));
+  }
+  // a protected neighbour survives the blast and the bomber is told so
+  {
+    const { r, act, pass, dead } = setup(['werewolf', 'villager', 'doctor', 'bomber', 'villager', 'villager', 'villager', 'villager']);
+    act(3, 'bomb', 5); act(0, 'kill', 1); act(2, 'protect', 4);
+    await sleep(100);
+    const live = r.players.filter(p => p.alive);
+    live.forEach((p, i) => game.handle({ action: 'vote', code: r.code, target: live[(i + 1) % live.length].id }, p));
+    if (r.phase === 'vote') clearTimeout(r.timer);
+    act(0, 'kill', 7); act(2, 'protect', 4); pass(3);
+    assert(!dead(4) && dead(5) && dead(6));
+    assert(r.msgs.some(m => m.to === r.players[3].id && /số 5 .* được bảo vệ/.test(m.text)));
   }
   // custom room: setup rules and capacity
   {

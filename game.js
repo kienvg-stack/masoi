@@ -110,11 +110,12 @@ function endNight(r) {
   by('ignite').forEach(x => Object.values(P(r, x.by).notes || {}).forEach(n => delete n.douse));
   if (by('ignite').length) r.players.filter(p => p.doused && p.alive).forEach(p => { p.doused = false; attacks.push({ t: p.id, by: 'fire', who: by('ignite').map(x => x.by) }); });
   // bombs placed last night go off now, taking the seats on either side too
-  for (const b of (r.bombs || []).filter(b => b.night < r.day)) {
+  const exploded = (r.bombs || []).filter(b => b.night < r.day);
+  for (const b of exploded) {
     delete ((P(r, b.owner).notes || {})[b.t] || {}).bomb;
     const i = r.players.findIndex(p => p.id === b.t);
     [i - 1, i, i + 1].map(j => r.players[(j + r.players.length) % r.players.length]).filter(p => p.alive && p.id !== b.owner)
-      .forEach(p => attacks.push({ t: p.id, by: 'bomb', who: [b.owner] }));
+      .forEach(p => attacks.push({ t: p.id, by: 'bomb', who: [b.owner], at: b.t }));
   }
   r.bombs = (r.bombs || []).filter(b => b.night >= r.day).concat(by('bomb').map(x => ({ t: x.t[0], owner: x.by, night: r.day })));
   by('bomb').forEach(x => note(P(r, x.by), P(r, x.t[0]), 'bomb'));
@@ -147,6 +148,13 @@ function endNight(r) {
     }
     deaths.push([v, atk.by]);
     atk.who.forEach(id => killers.add(id));
+  }
+  // the bomber hears what the blast did, so a protected neighbour is not a mystery
+  for (const b of exploded) {
+    const hit = attacks.filter(x => x.by === 'bomb' && x.at === b.t && x.who[0] === b.owner).map(x => P(r, x.t));
+    const died = hit.filter(p => deaths.some(([d]) => d === p)), safe = hit.filter(p => !died.includes(p));
+    const names = ps => ps.map(p => `số ${r.players.indexOf(p) + 1} ${p.name}`).join(', ');
+    priv(r, P(r, b.owner), `💣 Bom gài ở ${names([P(r, b.t)])} đã nổ! ${died.length ? `Hạ gục: ${names(died)}.` : 'Không hạ được ai.'}${safe.length ? ` ${names(safe)} được bảo vệ nên sống sót.` : ''}`, { fx: 'bomb' });
   }
   const attacked = attacks.filter(x => ['wolf', 'sk'].includes(x.by)).map(x => x.t);
   for (const [rl, t] of Object.entries(visiting)) {
