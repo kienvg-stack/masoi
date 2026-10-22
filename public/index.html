@@ -103,9 +103,13 @@ svg.avatar { display: block; overflow: visible; }
 /* ---------- WARDROBE ---------- */
 #wardrobe .grid { display: grid; grid-template-columns: 330px minmax(0, 1fr); gap: clamp(18px, 3vw, 36px); align-items: start; }
 .mirror { position: sticky; top: 18px; background: var(--sky) var(--trees) bottom / 100% auto no-repeat; border-radius: 16px; padding: 22px 12px 16px; text-align: center; }
-.mirror #wArt svg { width: 240px; margin: 0 auto; }
-#wGrave { display: inline-flex; align-items: center; gap: 10px; margin-top: 10px; font-weight: 700; font-size: 13px; background: var(--white); border-radius: 999px; padding: 4px 14px 4px 6px; }
-#wGrave svg { width: 40px; }
+#wArt { position: relative; width: 300px; max-width: 100%; margin: 0 auto; }
+#wArt > svg.avatar { position: relative; z-index: 1; width: 230px; margin: 0 auto; }
+#wArt .behind { position: absolute; z-index: 0; right: -16%; bottom: 7%; width: 68%; }
+#wArt .behind svg { width: 100%; }
+.mirror { overflow: hidden; }
+#wGrave { position: absolute; top: 12px; left: 16px; font-weight: 700; font-size: 13px; color: #13324a; }
+
 .chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 8px; scroll-snap-type: x proximity; }
 .chips button { padding: 9px 14px; font-size: 14px; flex: none; scroll-snap-align: start; }
 .items { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 10px; }
@@ -293,12 +297,12 @@ body.night #chatForm input { background: #1a1e27; color: #eef0f4; border-color: 
   #home .grid, #wardrobe .grid { grid-template-columns: minmax(0, 1fr); }
   .go .big { font-size: 15px; padding: 14px 12px; }
   .row { grid-template-columns: 44px minmax(0, 1fr) auto; gap: 10px; padding: 10px; } .row .tile { width: 44px; height: 44px; font-size: 12px; }
-  .profile, .mirror { position: static; }
+  .profile { position: static; } .mirror { position: relative; top: 0; }
   .profile { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 14px; text-align: left; align-items: center; }
   .profile svg { width: 100px; } .profile .art { padding: 10px 6px 0; }
   .profile h2 { margin-top: 0; font-size: 26px; } .profile .links { grid-column: 1 / -1; grid-template-columns: repeat(2, 1fr); }
   .go { grid-template-columns: 1fr 1fr; } .go form { grid-column: 1 / -1; }
-  .mirror #wArt svg { width: 170px; }
+  #wArt { width: 230px; } #wArt > svg.avatar { width: 170px; }
   .stage { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); }
   .board { aspect-ratio: auto; grid-auto-rows: min(31vw, calc((100dvh - 300px) / 4)); }
   .tile .nm { font-size: 11.5px; }
@@ -464,7 +468,7 @@ $('authForm').onsubmit = async e => {
   try {
     if (regMode) {
       if (password !== $('aPass2').value) throw 'Hai mật khẩu chưa khớp nhau';
-      const r = await api({ action:'register', name, password, avatar: AV.randomAvatar() });
+      const r = await api({ action:'register', name, password, avatar: AV.DEFAULT_AVATAR });
       setToken(r.token); ME = r.user; openWardrobe(true);
     } else {
       const r = await api({ action:'login', name, password });
@@ -508,15 +512,15 @@ let draft, slot = 'sets', firstTime = false;
 // a set replaces all accessories, keeping the player's own face/skin/hair unless the set overrides them
 const withSet = k => ({ ...draft, hat:'none', glasses:'none', mask:'none', fg:'none', bg:'none', ...SETS[k].a });
 function openWardrobe(first) {
-  firstTime = !!first; draft = { ...ME.avatar }; slot = 'sets';
+  firstTime = !!first; draft = { ...ME.avatar }; slot = SLOTS[0][0];
   $('wTitle').textContent = first ? 'Tạo nhân vật' : 'Tủ đồ';
   $('wCancel').classList.toggle('hidden', firstTime);
   show('wardrobe'); renderWardrobe();
 }
 function renderWardrobe() {
-  $('wArt').innerHTML = avatarSvg(draft);
-  $('wGrave').innerHTML = `${graveSvg(draft.grave)}<span>Bia mộ khi bạn chết</span>`;
-  $('wSlots').innerHTML = [['sets', 'Bộ trang phục'], ...SLOTS].map(([k, n]) => `<button class="${k === slot ? '' : 'sec'}" data-slot="${k}">${n}</button>`).join('');
+  $('wArt').innerHTML = `<div class="behind">${graveSvg(draft.grave)}</div>${avatarSvg(draft)}`;
+  $('wGrave').textContent = `Bia mộ: ${ITEMS.grave[draft.grave].n}`;
+  $('wSlots').innerHTML = [...SLOTS, ['sets', 'Bộ trang phục']].map(([k, n]) => `<button class="${k === slot ? '' : 'sec'}" data-slot="${k}">${n}</button>`).join('');
   if (slot === 'sets') {
     $('wItems').innerHTML = Object.entries(SETS).map(([k, s]) => `<div class="item" data-set="${k}">${avatarSvg(withSet(k))}${s.n}</div>`).join('');
   } else if (slot === 'skin' || slot === 'hairColor') {
