@@ -2,257 +2,402 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ma Sói Online</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#79c3e6">
+<title>Ma Sói</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
 <style>
-:root { --sky1:#0b0f2a; --sky2:#232a63; --panel:rgba(18,22,52,.86); --panel2:rgba(255,255,255,.06); --line:rgba(255,255,255,.12);
-  --txt:#f1eefc; --mut:#a3a8cf; --acc:#ffbf3c; --acc2:#ff8a3c; --red:#ef5350; --green:#4cc36a; --blue:#5aa9ff; }
-body.day { --sky1:#7cc4f2; --sky2:#ffd98a; --panel:rgba(40,28,60,.84); }
-* { box-sizing:border-box; }
-html, body { margin:0; min-height:100%; }
-body { font-family:'Baloo 2',system-ui,sans-serif; color:var(--txt); font-size:15px; background:linear-gradient(180deg,var(--sky1),var(--sky2)) fixed; transition:background 1s; overflow-x:hidden; }
-body::before { content:''; position:fixed; inset:0; pointer-events:none; transition:opacity 1s;
-  background-image:radial-gradient(1.5px 1.5px at 8% 12%,#fff,transparent),radial-gradient(1px 1px at 22% 38%,#fff,transparent),radial-gradient(1.5px 1.5px at 41% 8%,#fff,transparent),radial-gradient(1px 1px at 63% 22%,#fff,transparent),radial-gradient(1.5px 1.5px at 79% 9%,#fff,transparent),radial-gradient(1px 1px at 91% 33%,#fff,transparent),radial-gradient(1px 1px at 52% 44%,#fff,transparent),radial-gradient(1px 1px at 33% 61%,#fff,transparent); }
-body.day::before { opacity:0; }
-.hills { position:fixed; left:0; right:0; bottom:0; height:22vh; pointer-events:none; z-index:-1;
-  background:radial-gradient(60% 100% at 20% 100%,#141a3a 60%,transparent 61%),radial-gradient(70% 90% at 85% 100%,#10152f 60%,transparent 61%); transition:filter 1s; }
-body.day .hills { filter:hue-rotate(60deg) brightness(2.2) saturate(.6); }
-.sky-orb { position:fixed; top:22px; right:5vw; width:64px; height:64px; border-radius:50%; z-index:-1; background:#f5ecc8; box-shadow:0 0 60px 12px rgba(245,236,200,.35), inset -12px -6px 0 #ddd1a5; transition:1s; }
-body.day .sky-orb { background:#ffe066; box-shadow:0 0 90px 36px rgba(255,214,90,.65); }
-button { font:inherit; font-weight:800; border:0; border-radius:12px; padding:9px 16px; cursor:pointer; color:#3a2205;
-  background:linear-gradient(180deg,#ffd36a,var(--acc)); box-shadow:0 4px 0 #c6801b; transition:transform .08s, filter .15s; }
-button:hover { filter:brightness(1.08); } button:active { transform:translateY(3px); box-shadow:0 1px 0 #c6801b; }
-button.ghost { background:var(--panel2); color:var(--txt); box-shadow:0 3px 0 rgba(0,0,0,.35); border:1px solid var(--line); }
-button.red { background:linear-gradient(180deg,#ff7a73,var(--red)); color:#fff; box-shadow:0 4px 0 #a52a26; }
-button.blue { background:linear-gradient(180deg,#8cc4ff,var(--blue)); color:#08213f; box-shadow:0 4px 0 #2e6bb3; }
-button:disabled { opacity:.45; cursor:default; transform:none; }
-button.on { outline:3px solid #fff; }
-input { font:inherit; padding:10px 14px; border-radius:12px; border:2px solid var(--line); background:rgba(0,0,0,.35); color:var(--txt); min-width:0; outline:none; }
-input:focus { border-color:var(--acc); }
-.hidden { display:none !important; }
-.panel { background:var(--panel); border:2px solid var(--line); border-radius:18px; padding:16px; backdrop-filter:blur(8px); box-shadow:0 10px 30px rgba(0,0,0,.35); }
-.title { font-weight:800; font-size:clamp(46px,8vw,76px); line-height:1; color:var(--acc); text-shadow:0 4px 0 #a34d10, 0 10px 30px rgba(0,0,0,.5); letter-spacing:1px; }
-h3 { margin:0 0 10px; font-size:20px; }
-.mut { color:var(--mut); }
-.err { color:#ff8a80; min-height:1.3em; font-size:14px; font-weight:700; }
-.screen { max-width:1280px; margin:0 auto; padding:16px; }
-svg.avatar { display:block; overflow:visible; }
-.ri { display:inline-grid; place-items:center; width:1.9em; height:1.9em; border-radius:50%; background:radial-gradient(circle at 35% 30%,#3b3f6b,#151833); box-shadow:0 0 0 2px var(--c,#888); font-size:1em; line-height:1; flex:none; }
-.tm { font-size:11px; padding:1px 8px; border-radius:20px; font-weight:800; color:#fff; vertical-align:middle; }
+:root {
+  --sky: #79c3e6; --night: #44526e; --pink: #d81b60; --pink-soft: #fbd3e0; --ink: #1f2430; --paper: #f4f5f7; --white: #ffffff; --wood: #8a5a2e;
+  --mint: #1fa37a; --red: #e5394d; --orange: #f08a24;
+  --ground: var(--paper); --fg: var(--ink); --soft: #5d6372; --panel: #eceef1; --line: #d5d8de;
+  --ease: cubic-bezier(.16, 1, .3, 1);
+  --display: 'Bricolage Grotesque', 'Be Vietnam Pro', sans-serif;
+  --trees: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 40'%3E%3Cpath d='M0 40V31Q25 24 55 30T120 27V40Z' fill='%233a4f6a'/%3E%3Cpath d='M4 32l5-15 5 15zM12 33l4-11 4 11zM19 33l3-8 3 8zM94 30l5-16 5 16zM102 31l4-11 4 11zM110 30l3-9 3 9z' fill='%232b3c52'/%3E%3C/svg%3E");
+  --trees-n: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 40'%3E%3Cpath d='M0 40V31Q25 24 55 30T120 27V40Z' fill='%232a3448'/%3E%3Cpath d='M4 32l5-15 5 15zM12 33l4-11 4 11zM19 33l3-8 3 8zM94 30l5-16 5 16zM102 31l4-11 4 11zM110 30l3-9 3 9z' fill='%231d2535'/%3E%3C/svg%3E");
+}
+body.night { --ground: #1a1e27; --fg: #eef0f4; --soft: #a9afbd; --panel: #262a33; --line: #3a404c; }
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body { font: 500 15px/1.5 'Be Vietnam Pro', system-ui, sans-serif; color: var(--fg); background: var(--ground); transition: background .5s var(--ease), color .5s var(--ease); -webkit-tap-highlight-color: transparent; }
+::selection { background: var(--pink); color: var(--white); }
+:focus-visible { outline: 3px solid var(--pink); outline-offset: 2px; }
+* { scrollbar-width: thin; scrollbar-color: #9aa1af transparent; }
+.hidden { display: none !important; }
+.ph-bold { font-size: 1.15em; line-height: 1; vertical-align: -.15em; }
+h1, h2, h3 { font-family: var(--display); margin: 0; line-height: 1.1; letter-spacing: -.015em; }
 
-/* auth */
-#auth { display:grid; grid-template-columns:1fr 400px; gap:30px; align-items:center; min-height:100vh; }
-#auth .hero { text-align:center; }
-#auth .hero svg { width:min(260px,50vw); margin:20px auto 0; filter:drop-shadow(0 18px 24px rgba(0,0,0,.5)); animation:bob 3s ease-in-out infinite; }
-@keyframes bob { 50% { transform:translateY(-8px); } }
-.tabs { display:flex; gap:6px; margin-bottom:14px; }
-.tabs button { flex:1; }
-.form { display:grid; gap:10px; }
+/* controls */
+button { font: 700 15px/1 'Be Vietnam Pro', sans-serif; display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap;
+  border: 0; border-radius: 999px; padding: 12px 18px; cursor: pointer; background: var(--pink); color: var(--white);
+  box-shadow: 0 2px 5px rgba(0,0,0,.2); transition: transform .12s var(--ease), filter .15s, background .15s; }
+button:hover { filter: brightness(1.07); }
+button:active { transform: translateY(1px) scale(.98); }
+button:disabled { opacity: .45; cursor: default; transform: none; filter: none; }
+button.sec { background: var(--white); color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line), 0 1px 0 rgba(0,0,0,.06); }
+button.sec:hover { background: #f7e3ea; filter: none; }
+button.bare { background: transparent; color: inherit; box-shadow: none; padding: 8px 10px; }
+button.bare:hover { background: rgba(127,127,127,.14); filter: none; }
+button.on { background: var(--ink); color: var(--white); }
+label { display: grid; gap: 6px; font-weight: 700; font-size: 13px; }
+input { font: 500 16px 'Be Vietnam Pro', sans-serif; padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--white); color: var(--ink); min-width: 0; width: 100%; }
+input::placeholder { color: #626877; }
+input:focus { outline: none; border-color: var(--pink); box-shadow: 0 0 0 3px var(--pink-soft); }
+.err { color: #c0122f; font-weight: 700; font-size: 14px; min-height: 1.4em; }
+svg.avatar { display: block; overflow: visible; }
 
-/* home */
-.topbar { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
-.topbar .title { font-size:38px; }
-.chip { display:inline-flex; align-items:center; gap:8px; background:var(--panel); border:2px solid var(--line); border-radius:40px; padding:4px 14px 4px 4px; font-weight:700; }
-.chip svg { width:34px; height:46px; margin-top:-8px; }
-#home .grid { display:grid; grid-template-columns:260px 1fr 340px; gap:16px; align-items:start; }
-.stage { text-align:center; padding-top:8px; }
-.stage svg { width:min(300px,70vw); margin:0 auto; filter:drop-shadow(0 20px 20px rgba(0,0,0,.45)); animation:bob 3.4s ease-in-out infinite; }
-.plinth { width:240px; height:34px; margin:-20px auto 0; border-radius:50%; background:radial-gradient(#5a5f8f,#262a4d 70%); box-shadow:0 8px 20px rgba(0,0,0,.5); }
-.nameplate { display:inline-block; margin-top:12px; padding:4px 22px; border-radius:30px; background:linear-gradient(180deg,#4b3a8a,#2c2260); border:2px solid #7a6bd0; font-size:22px; font-weight:800; }
-.bigplay { width:100%; font-size:28px; padding:16px; border-radius:18px; margin-bottom:12px; }
-.menu { display:grid; gap:10px; }
-.menu button { text-align:left; font-size:17px; padding:12px 16px; }
-.lobbies { display:grid; gap:8px; max-height:280px; overflow:auto; margin-top:8px; }
-.lob { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 12px; border-radius:12px; background:var(--panel2); }
-.lb { display:flex; align-items:center; gap:8px; padding:4px 0; border-bottom:1px solid var(--line); }
-.lb svg { width:30px; height:42px; } .lb b { flex:1; }
+/* role glyphs: one icon family, team-colored tiles */
+.rg { display: inline-grid; place-items: center; width: 1.9em; height: 1.9em; border-radius: 8px; color: var(--white); flex: none; }
+.rg.t-village { background: var(--mint); } .rg.t-wolf { background: var(--red); } .rg.t-solo { background: var(--orange); }
+.team { display: inline-block; font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 99px; color: var(--white); white-space: nowrap; }
+.team.t-village { background: var(--mint); } .team.t-wolf { background: var(--red); } .team.t-solo { background: var(--orange); }
 
-/* wardrobe */
-#wardrobe .grid { display:grid; grid-template-columns:340px 1fr; gap:16px; }
-#wardrobe .stage svg { width:280px; } #wardrobe #wGrave svg { width:90px; animation:none; }
-.slots { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
-.slots button { padding:6px 12px; font-size:14px; }
-.items { display:grid; grid-template-columns:repeat(auto-fill,minmax(104px,1fr)); gap:10px; max-height:62vh; overflow:auto; padding:4px; }
-.item { background:var(--panel2); border:2px solid transparent; border-radius:14px; padding:6px; cursor:pointer; text-align:center; font-size:12px; font-weight:700; transition:transform .1s; }
-.item:hover { transform:translateY(-2px); border-color:rgba(255,191,60,.5); }
-.item.sel { border-color:var(--acc); background:rgba(255,191,60,.15); }
-.item svg { width:100%; height:96px; }
-.swatch { height:60px; border-radius:10px; margin-bottom:4px; }
+/* ---------- AUTH ---------- */
+#auth { min-height: 100dvh; background: var(--sky) var(--trees) bottom / 100% auto no-repeat; color: var(--ink); display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(320px, 420px); gap: clamp(24px, 5vw, 80px); align-items: center;
+  padding: clamp(20px, 5vw, 72px) max(clamp(20px, 5vw, 72px), calc((100vw - 1240px) / 2)) clamp(120px, 18vw, 260px); }
+.invite h1 { font-size: clamp(60px, 11vw, 140px); font-weight: 800; letter-spacing: -.04em; line-height: .9; color: var(--white); text-shadow: 0 4px 0 rgba(31,36,48,.25); }
+.invite p { font-size: clamp(17px, 2vw, 21px); font-weight: 600; max-width: 32ch; margin: 16px 0 0; color: #13324a; }
+.invite .crowd { display: flex; align-items: flex-end; margin-top: 26px; }
+.invite .crowd svg { width: clamp(84px, 10vw, 130px); margin-right: -14px; }
+.sheet { background: var(--white); border-radius: 16px; padding: 22px; box-shadow: 0 18px 40px -16px rgba(0,0,0,.3); color: var(--ink); }
+.seg { display: grid; grid-template-columns: 1fr 1fr; background: var(--paper); border-radius: 999px; padding: 4px; margin-bottom: 18px; }
+.seg button { background: transparent; color: var(--soft); box-shadow: none; }
+.seg button.on { background: var(--white); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+.form { display: grid; gap: 14px; }
+.note { font-size: 13px; color: var(--soft); }
 
-/* roles */
-.rolegrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:12px; }
-.rc { display:flex; gap:12px; align-items:flex-start; }
-.rc .ri { font-size:26px; }
-.rc b { font-size:17px; } .rc small { display:block; color:var(--mut); line-height:1.45; margin-top:2px; }
-.abl { display:flex; gap:4px; flex-wrap:wrap; margin-top:6px; }
-.abl span { font-size:11px; background:var(--panel2); border-radius:8px; padding:1px 7px; }
+/* ---------- shared screen chrome ---------- */
+.screen { max-width: 1180px; margin: 0 auto; padding: 18px clamp(16px, 3vw, 32px) 40px; }
+.bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 14px; margin-bottom: 22px; border-bottom: 1.5px solid var(--line); }
+.wordmark { font: 800 28px/1 var(--display); letter-spacing: -.03em; display: flex; align-items: center; gap: 10px; }
+.wordmark i { background: var(--pink); color: var(--white); border-radius: 10px; padding: 6px; font-size: 18px; }
 
-/* game */
-#game { display:grid; grid-template-columns:1fr minmax(320px,440px) 1fr; grid-template-rows:auto 1fr; gap:12px; height:100vh; padding:12px; max-width:1400px; margin:0 auto; }
-.gtop { grid-column:1/-1; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
-.phase { font-size:26px; font-weight:800; padding:2px 18px; border-radius:30px; background:var(--panel); border:2px solid var(--line); }
-.tbar { flex:1; min-width:120px; height:14px; border-radius:10px; background:rgba(0,0,0,.35); overflow:hidden; border:2px solid var(--line); }
-.tbar i { display:block; height:100%; background:linear-gradient(90deg,var(--acc2),var(--acc)); transition:width .25s linear; }
-.tnum { font-weight:800; font-size:22px; min-width:52px; text-align:right; font-variant-numeric:tabular-nums; }
-.col { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; align-content:start; overflow:auto; padding:4px; }
-.slot { position:relative; text-align:center; border-radius:16px; padding:4px 2px 6px; transition:transform .12s, background .2s; }
-.slot svg { width:100%; max-width:118px; height:120px; margin:0 auto; }
-.slot .nm { display:inline-block; max-width:100%; padding:0 10px; border-radius:20px; background:rgba(0,0,0,.45); font-weight:700; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.slot .no { position:absolute; top:2px; left:4px; width:24px; height:24px; border-radius:50%; background:#2c2260; border:2px solid #7a6bd0; font-size:12px; font-weight:800; display:grid; place-items:center; }
-.slot .rb { position:absolute; top:2px; right:4px; font-size:14px; }
-.slot .vt { position:absolute; top:40px; right:6px; background:var(--red); color:#fff; font-weight:800; border-radius:20px; padding:0 8px; font-size:13px; box-shadow:0 2px 6px rgba(0,0,0,.4); }
-.slot .tag { position:absolute; top:30px; left:6px; font-size:16px; }
-.slot.me .nm { background:#2f62c9; }
-.slot.dead .nm { text-decoration:line-through; color:var(--mut); }
-.slot.empty { opacity:.25; } .slot.empty svg { filter:brightness(0); }
-.slot.tg { cursor:pointer; background:rgba(255,191,60,.12); box-shadow:0 0 0 2px rgba(255,191,60,.55) inset; }
-.slot.tg:hover { transform:translateY(-3px); background:rgba(255,191,60,.25); }
-.slot.pk { box-shadow:0 0 0 3px var(--red) inset; background:rgba(239,83,80,.18); }
-.slot .kick { position:absolute; bottom:28px; right:4px; padding:0 7px; font-size:12px; border-radius:8px; }
-.center { display:flex; flex-direction:column; gap:10px; min-height:0; }
-.chat { flex:1; display:flex; flex-direction:column; min-height:0; padding:10px; }
-.log { flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:4px; padding-right:4px; min-height:120px; }
-.m { line-height:1.35; padding:3px 8px; border-radius:10px; word-wrap:break-word; }
-.m b { color:var(--acc); }
-.m.sys { color:#d6d9f5; text-align:center; font-size:13.5px; background:rgba(255,255,255,.05); }
-.m.wolf { background:rgba(208,69,63,.18); } .m.wolf b { color:#ff7d74; }
-.m.dead { background:rgba(150,150,180,.14); color:#c3c6dc; } .m.dead b { color:#b2b6d6; }
-.m.priv { background:rgba(142,91,214,.25); font-weight:700; color:#e2d3ff; }
-.chat form { display:flex; gap:6px; margin-top:8px; } .chat input { flex:1; }
-.bar { padding:10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-.myrole { display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:800; font-size:16px; }
-.myrole .ri { font-size:24px; }
-.acts { display:flex; gap:6px; flex-wrap:wrap; flex:1; justify-content:flex-end; }
-.acts button { padding:7px 12px; font-size:14px; }
-.hint { width:100%; font-size:14px; color:var(--acc); font-weight:700; }
-.banner { grid-column:1/-1; text-align:center; font-size:34px; font-weight:800; color:var(--acc); }
+/* ---------- HOME ---------- */
+#home .grid { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: clamp(20px, 4vw, 48px); align-items: start; }
+.profile { position: sticky; top: 18px; text-align: center; }
+.profile .art { background: var(--sky) var(--trees) bottom / 100% auto no-repeat; border-radius: 16px; padding: 18px 10px 0; overflow: hidden; }
+.profile svg { width: 180px; margin: 0 auto; }
+.profile h2 { font-size: 30px; margin-top: 14px; overflow-wrap: anywhere; }
+.profile .stats { color: var(--soft); font-weight: 600; margin: 4px 0 16px; }
+.profile .links { display: grid; gap: 8px; }
+.play h2 { font-size: clamp(32px, 4.6vw, 52px); font-weight: 800; letter-spacing: -.03em; }
+.play .lead { color: var(--soft); font-size: 17px; margin: 8px 0 20px; max-width: 46ch; }
+.go { display: grid; grid-template-columns: auto auto minmax(0, 1fr); gap: 10px; align-items: stretch; }
+.go .big { font-size: 17px; padding: 15px 22px; }
+.go form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+.go input { text-transform: uppercase; letter-spacing: .2em; font-weight: 700; border-radius: 999px; }
+.list-h { margin: 34px 0 8px; }
+.list-h h3 { font-size: 21px; }
+.rows { background: var(--white); border-radius: 14px; box-shadow: inset 0 0 0 1.5px var(--line); }
+.row { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.row:last-child { border-bottom: 0; }
+.row .tile { width: 52px; height: 52px; display: grid; place-items: center; background: var(--sky); color: var(--white); border-radius: 10px; font: 800 14px var(--display); letter-spacing: .04em; text-shadow: 0 1px 2px rgba(0,0,0,.3); }
+.row b { display: block; font-size: 16px; } .row small { color: var(--soft); font-size: 13.5px; }
+.row svg.avatar { width: 46px; justify-self: center; }
+.empty { padding: 18px 16px; color: var(--soft); }
+.rank { font: 800 20px var(--display); width: 52px; text-align: center; color: var(--pink); }
 
-/* fx overlay */
-#fx { position:fixed; inset:0; z-index:60; display:grid; place-items:center; pointer-events:none; }
-#fx .card { position:relative; width:min(250px,60vw); text-align:center; animation:pop .5s cubic-bezier(.2,1.6,.4,1); }
-#fx .card svg.avatar { width:100%; filter:drop-shadow(0 20px 40px rgba(0,0,0,.6)); }
-#fx .card .ri { font-size:90px; margin:20px auto; }
-#fx .cap { margin-top:8px; font-size:21px; font-weight:800; text-shadow:0 2px 10px #000; }
-#fx .fl { position:fixed; inset:0; animation:flash 1.2s ease-out forwards; }
-#fx .big { font-size:clamp(46px,9vw,96px); font-weight:800; color:var(--acc); text-shadow:0 6px 0 #a34d10, 0 0 60px rgba(0,0,0,.7); animation:pop .6s cubic-bezier(.2,1.6,.4,1); }
-@keyframes pop { from { transform:scale(.3); opacity:0; } }
-@keyframes flash { from { opacity:.75; } to { opacity:0; } }
-@keyframes shake { 0%,100% { transform:none; } 20% { transform:translate(-10px,4px); } 40% { transform:translate(10px,-4px); } 60% { transform:translate(-6px,2px); } 80% { transform:translate(6px,0); } }
-.shake { animation:shake .4s; }
-.claw { position:absolute; z-index:2; left:-10%; width:120%; height:10px; border-radius:10px; background:linear-gradient(90deg,transparent,#ff2a2a,#8b0000); transform-origin:left; animation:slash .35s ease-out both; box-shadow:0 0 18px #f00; }
-@keyframes slash { from { transform:rotate(var(--r)) scaleX(0); } to { transform:rotate(var(--r)) scaleX(1); } }
-.flip { animation:flip 1.2s ease-in-out both; } @keyframes flip { 50% { transform:rotateY(90deg); } }
-.glow { position:absolute; inset:-30%; border-radius:50%; animation:pulse 1.2s ease-in-out infinite; }
-@keyframes pulse { 0%,100% { transform:scale(.8); opacity:.5; } 50% { transform:scale(1.1); opacity:1; } }
-.ring { position:absolute; left:0; right:0; top:10%; aspect-ratio:1; border-radius:50%; border:6px solid #6fd0ff; animation:ring 1.4s ease-out infinite; box-shadow:0 0 30px #6fd0ff; }
-@keyframes ring { from { transform:scale(.9); opacity:1; } to { transform:scale(1.5); opacity:0; } }
-.bub { position:absolute; z-index:2; bottom:15%; width:14px; height:14px; border-radius:50%; animation:rise 1.6s ease-in both; }
-@keyframes rise { to { transform:translateY(-260px) scale(.4); opacity:0; } }
-.arrow { position:absolute; z-index:2; top:45%; left:-60%; width:90%; height:4px; background:#8b5a2b; animation:shoot .4s ease-in both; }
-.arrow::after { content:''; position:absolute; right:-14px; top:-8px; border:10px solid transparent; border-left:16px solid #ddd; }
-@keyframes shoot { to { left:40%; } }
-.rope { position:absolute; left:50%; top:-60vh; width:4px; height:62vh; background:#a07b4a; }
-.swing { transform-origin:50% -60vh; animation:swing 1.6s ease-in-out both; } @keyframes swing { 0% { transform:translateY(-70vh); } 40% { transform:rotate(8deg); } 70% { transform:rotate(-5deg); } 100% { transform:rotate(0); } }
-.sick svg.avatar { animation:sick 1.6s both; } @keyframes sick { to { filter:hue-rotate(80deg) saturate(2) brightness(.7) drop-shadow(0 0 30px #7cff4a); } }
-.dying svg.avatar { animation:dying 1.8s both; } @keyframes dying { to { filter:grayscale(1) brightness(.6); transform:translateY(10px); } }
-@media (prefers-reduced-motion:reduce) { #fx *, .stage svg, #auth .hero svg { animation-duration:.01s !important; } }
+/* ---------- WARDROBE ---------- */
+#wardrobe .grid { display: grid; grid-template-columns: 330px minmax(0, 1fr); gap: clamp(18px, 3vw, 36px); align-items: start; }
+.mirror { position: sticky; top: 18px; background: var(--sky) var(--trees) bottom / 100% auto no-repeat; border-radius: 16px; padding: 22px 12px 16px; text-align: center; }
+.mirror #wArt svg { width: 240px; margin: 0 auto; }
+#wGrave { display: inline-flex; align-items: center; gap: 10px; margin-top: 10px; font-weight: 700; font-size: 13px; background: var(--white); border-radius: 999px; padding: 4px 14px 4px 6px; }
+#wGrave svg { width: 40px; }
+.chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 8px; scroll-snap-type: x proximity; }
+.chips button { padding: 9px 14px; font-size: 14px; flex: none; scroll-snap-align: start; }
+.items { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 10px; }
+.item { cursor: pointer; text-align: center; font-size: 12.5px; font-weight: 600; padding: 8px 6px 10px; border-radius: 12px; background: var(--white); box-shadow: inset 0 0 0 1.5px var(--line); transition: box-shadow .15s, transform .15s var(--ease); }
+.item:hover { transform: translateY(-2px); box-shadow: inset 0 0 0 2px var(--pink); }
+.item.sel { box-shadow: inset 0 0 0 3px var(--pink); background: #fff4f8; }
+.item svg { width: 92px; height: 112px; margin: 0 auto 4px; }
+.swatch { height: 64px; border-radius: 10px; margin-bottom: 6px; }
 
-/* modal */
-.modal { position:fixed; inset:0; z-index:50; background:rgba(5,6,15,.75); display:grid; place-items:center; padding:16px; }
-.modal > .panel { width:min(760px,100%); max-height:90vh; overflow:auto; background:#171c40; animation:pop .45s cubic-bezier(.2,1.4,.4,1); }
-.modal h2 { margin:0; text-align:center; font-size:40px; color:var(--acc); }
-.stats { display:flex; justify-content:center; gap:16px; color:var(--mut); margin:4px 0 12px; flex-wrap:wrap; font-weight:700; }
-.res { display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:10px; }
-.rp { text-align:center; border-radius:14px; padding:6px; background:var(--panel2); border:2px solid transparent; font-size:12.5px; }
-.rp.win { border-color:var(--green); background:rgba(76,195,106,.14); }
-.rp svg { width:90px; height:96px; margin:0 auto; }
-.rp b { display:block; font-size:14px; }
-.rp .ri { font-size:14px; }
+/* ---------- ROLES ---------- */
+.teamblock { margin-bottom: 34px; }
+.teamblock h2 { font-size: 28px; display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.roles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 10px; }
+.role { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; padding: 14px; background: var(--white); border-radius: 14px; box-shadow: inset 0 0 0 1.5px var(--line); }
+.role .rg { font-size: 22px; }
+.role b { font-size: 17px; } .role p { margin: 2px 0 6px; color: var(--soft); font-size: 14px; }
+.abl { display: flex; flex-wrap: wrap; gap: 6px; }
+.abl span { font-size: 12px; font-weight: 700; background: var(--paper); border-radius: 99px; padding: 2px 9px; display: inline-flex; gap: 4px; align-items: center; }
 
-@media (max-width:1000px) {
-  #auth { grid-template-columns:1fr; min-height:0; padding-top:30px; }
-  #home .grid, #wardrobe .grid { grid-template-columns:1fr; }
-  #game { grid-template-columns:1fr; grid-template-rows:auto; height:auto; }
-  .col { grid-template-columns:repeat(4,1fr); overflow:visible; }
-  .col.right { order:2; } .center { order:3; } .chat { height:60vh; }
-  .slot svg { height:88px; }
-  .sky-orb { width:40px; height:40px; top:10px; right:10px; }
+/* ---------- GAME: tile grid over chat, like the reference ---------- */
+#game { height: 100dvh; display: grid; grid-template-rows: auto minmax(0, 1fr); max-width: 1240px; margin: 0 auto; }
+.top { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; padding: 6px 8px 0; background: var(--white); color: var(--ink); }
+body.night .top { background: #12151c; color: #eef0f4; }
+.top button { width: 40px; height: 40px; padding: 0; background: transparent; color: inherit; box-shadow: none; font-size: 20px; }
+.top button:hover { background: rgba(127,127,127,.15); filter: none; }
+.top .ttl { text-align: center; min-width: 0; }
+.top h1 { font: 700 17px/1.3 'Be Vietnam Pro', sans-serif; letter-spacing: 0; }
+#tnum { font-variant-numeric: tabular-nums; color: var(--soft); } #tnum.low { color: var(--pink); }
+.top .sub { font-size: 12px; color: var(--soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.top .fuse { grid-column: 1 / -1; height: 3px; margin: 6px -8px 0; background: var(--pink); transform-origin: left; transition: transform .25s linear; }
+.stage { display: grid; grid-template-columns: min(56%, calc((100dvh - 70px) * 3 / var(--rows, 4))) minmax(0, 1fr); min-height: 0; }
+.board { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 1fr; gap: 3px; padding: 3px; background: var(--white); align-content: start; aspect-ratio: 3 / var(--rows, 4); max-height: 100%; }
+#fx .card svg.avatar { max-height: 40vh; }
+.board[data-rows="2"] .tile:nth-child(n+9), .board[data-rows="3"] .tile:nth-child(n+13) { display: none; }
+body.night .board { background: #12151c; }
+.tile { position: relative; overflow: hidden; border-radius: 4px; background: var(--sky) var(--trees) bottom / 100% auto no-repeat; transition: transform .15s var(--ease), box-shadow .15s; min-width: 0; }
+/* night falls tile by tile, dawn sweeps warm light across in the same order (--i = diagonal index) */
+.tile::before { content: ''; position: absolute; inset: 0; background: var(--night) var(--trees-n) bottom / 100% auto no-repeat; opacity: 0; transition: opacity .55s ease calc(var(--i, 0) * 90ms); }
+body.night .tile::before { opacity: 1; }
+.tile::after { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(160deg, rgba(255,214,102,.85), rgba(255,170,60,.25) 60%, transparent); opacity: 0; }
+body.dawn .tile::after { animation: sunup 1.3s ease-out calc(var(--i, 0) * 110ms) both; }
+@keyframes sunup { 35% { opacity: 1; } 100% { opacity: 0; } }
+.tile > * { z-index: 1; }
+.tile svg.avatar { overflow: hidden; }
+.tile.dying { animation: hit .5s; }
+.tile.dying::after { background: rgba(229,57,77,.75); animation: bleed 1.6s ease-out both; }
+.tile.dying svg.avatar { animation: graveIn .6s .45s var(--ease) both; }
+@keyframes hit { 25% { transform: translateX(-4px); } 50% { transform: translateX(4px); } 75% { transform: translateX(-2px); } }
+@keyframes bleed { 0% { opacity: .9; } 100% { opacity: 0; } }
+@keyframes graveIn { from { transform: translateY(40%); opacity: 0; } }
+.tile .nm { position: absolute; top: 4px; left: 4px; right: 4px; z-index: 2; text-align: center; color: var(--white); font-weight: 700; font-size: 13px; line-height: 1.3; text-shadow: 0 1px 2px rgba(0,0,0,.55); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tile.me .nm { color: var(--pink); text-shadow: 0 0 2px #fff, 0 0 3px #fff, 0 0 4px #fff; }
+.tile svg.avatar { position: absolute; left: 6%; bottom: 0; width: 88%; height: 82%; }
+.tile.dead { filter: saturate(.3) brightness(.82); }
+.tile.dead svg.avatar { height: 84%; left: 6%; width: 88%; }
+.tile.dead .nm { text-decoration: line-through; opacity: .85; }
+.tile .sign { position: absolute; z-index: 2; left: 50%; bottom: 2%; transform: translateX(-50%) rotate(-3deg); min-width: 40%; padding: 3px 8px; background: var(--wood); border: 2px solid #5e3b1b; border-radius: 4px; color: var(--white); font: 800 clamp(13px, 1.6vw, 18px)/1.3 var(--display); text-align: center; box-shadow: 0 3px 6px rgba(0,0,0,.3); }
+.tile .rg { position: absolute; z-index: 2; right: 4px; bottom: 4px; font-size: 11px; width: 22px; height: 22px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,.35); }
+.tile .tags { position: absolute; z-index: 2; left: 4px; bottom: 4px; display: flex; gap: 2px; }
+.tile .tags i { background: var(--white); color: var(--pink); border-radius: 6px; width: 22px; height: 22px; display: grid; place-items: center; font-size: 13px; }
+.tile .say { position: absolute; z-index: 3; top: 22px; left: 5px; right: 5px; background: var(--pink-soft); color: var(--ink); border-radius: 10px; padding: 3px 7px; font-size: 11.5px; font-weight: 600; line-height: 1.35; text-align: center;
+  overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,.2); animation: say .3s var(--ease); }
+.tile .say span { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+@keyframes say { from { transform: translateY(6px) scale(.9); opacity: 0; } }
+.tile .host { position: absolute; z-index: 2; left: 4px; bottom: 4px; color: #ffd84d; font-size: 18px; text-shadow: 0 1px 2px rgba(0,0,0,.5); }
+.tile.tg { cursor: pointer; box-shadow: inset 0 0 0 3px rgba(255,255,255,.85); }
+.tile.tg:hover { transform: scale(1.03); z-index: 4; }
+.tile.pk { box-shadow: inset 0 0 0 4px var(--pink); }
+.tile .hand { position: absolute; z-index: 3; left: 4px; top: 24px; display: flex; align-items: center; gap: 2px; padding: 2px 7px 2px 4px; border-radius: 99px; background: var(--white); color: var(--pink); font: 800 14px/1.3 var(--display); box-shadow: 0 2px 4px rgba(0,0,0,.3); transform: rotate(-8deg); }
+.tile .hand i { font-size: 17px; transform: rotate(90deg); }
+.tile .kick { position: absolute; z-index: 3; right: 4px; bottom: 4px; width: 26px; height: 26px; padding: 0; font-size: 13px; background: var(--white); color: var(--ink); }
+
+.side { display: grid; grid-template-rows: minmax(0, 1fr) auto; min-height: 0; background: var(--panel); }
+.thread { overflow-y: auto; padding: 10px 14px; display: flex; flex-direction: column; gap: 3px; font-size: 14.5px; line-height: 1.4; }
+.ln { overflow-wrap: anywhere; padding: 1px 6px; border-radius: 4px; }
+.ln b { font-weight: 800; }
+.ln.mine b { color: var(--pink); }
+.ln.wolf { background: rgba(229,57,77,.16); } .ln.wolf b { color: var(--red); }
+.ln.dead { color: var(--soft); font-style: italic; }
+.ln.sys { color: var(--pink); font-weight: 700; }
+body.night .ln.sys { color: #ff7aa6; }
+.ln.priv { background: var(--pink-soft); color: var(--ink); font-weight: 700; }
+.event { margin: 8px 0 4px; display: flex; align-items: center; justify-content: space-between; gap: 10px; background: #dfe2e7; border-radius: 10px; padding: 8px 12px; color: var(--pink); font-weight: 700; }
+body.night .event { background: #323845; color: #ff7aa6; }
+.event i { font-size: 22px; } .event .ph-sun { color: #e8920c; } .event .ph-moon { color: #ffd84d; }
+.cue { text-align: center; padding: 14px 10px 4px; }
+.cue b { display: block; font: 700 19px var(--display); }
+.cue span { color: var(--soft); }
+
+.poll { margin: 0 10px 8px; border-radius: 12px; background: var(--white); color: var(--ink); padding: 10px 12px; max-height: 34vh; overflow-y: auto; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+.poll h3 { font: 700 15px 'Be Vietnam Pro', sans-serif; display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+.opts { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); column-gap: 10px; }
+.opt { width: 100%; display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 10px; align-items: center; background: transparent; color: var(--ink); box-shadow: none; border-radius: 8px; padding: 6px; font-weight: 600; text-align: left; position: relative; overflow: hidden; }
+.opt:hover { background: var(--paper); filter: none; }
+.opt .fill { position: absolute; inset: 0; background: var(--pink); opacity: .18; transform-origin: left; transition: transform .4s var(--ease); }
+.opt .n { font: 800 12px/22px var(--display); background: var(--sky); color: var(--white); border-radius: 6px; text-align: center; position: relative; }
+.opt span, .opt b { position: relative; }
+.opt.mine { box-shadow: inset 0 0 0 2px var(--pink); }
+
+.dock { padding: 8px 10px calc(8px + env(safe-area-inset-bottom)); display: grid; gap: 6px; border-top: 1px solid var(--line); background: var(--panel); }
+#hint { font-weight: 600; font-size: 13.5px; color: var(--soft); text-align: center; }
+#hint.warn { color: var(--pink); }
+#acts { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+#acts:empty { display: none; }
+#acts button { padding: 9px 14px; font-size: 14px; }
+.composer { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 6px; align-items: center; }
+#myRole { cursor: pointer; display: grid; place-items: center; }
+#myRole .rg { font-size: 18px; width: 42px; height: 42px; border-radius: 12px; }
+#chatForm { display: contents; }
+#chatForm input { background: var(--white); border-radius: 999px; }
+body.night #chatForm input { background: #1a1e27; color: #eef0f4; border-color: #3a404c; }
+#chatForm input:disabled { opacity: .55; }
+#chatForm button { width: 42px; height: 42px; padding: 0; }
+
+/* ---------- FX ---------- */
+#fx { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; pointer-events: none; }
+.board { position: relative; }
+#fx.on-board { position: absolute; inset: 0; z-index: 20; overflow: hidden; }
+#fx .wash { position: absolute; inset: 0; border-radius: 6px; background-color: rgba(19,24,34,.55) !important; animation: wash 2.2s ease-out forwards; }
+@keyframes wash { 0%, 75% { opacity: 1; } 100% { opacity: 0; } }
+#fx .card { position: relative; width: min(220px, 46%); text-align: center; animation: pop .5s var(--ease) both; }
+@keyframes pop { from { transform: scale(.4); opacity: 0; } }
+#fx .card svg.avatar { width: 100%; filter: drop-shadow(0 16px 24px rgba(0,0,0,.35)); }
+#fx .card > .rg { font-size: 80px; width: 1.6em; height: 1.6em; margin: 24px auto; border-radius: 28px; }
+#fx .cap { display: inline-block; margin-top: 8px; background: var(--white); color: var(--ink); border-radius: 12px; padding: 8px 14px; font: 700 16px/1.4 'Be Vietnam Pro', sans-serif; box-shadow: 0 6px 16px rgba(0,0,0,.25); max-width: 92vw; }
+#fx .drop { background: var(--white); color: var(--pink); border-radius: 16px; padding: 14px 28px; font: 800 clamp(34px, 7vw, 64px)/1.3 var(--display); display: flex; align-items: center; gap: 16px; box-shadow: 0 12px 30px rgba(0,0,0,.3); animation: drop .55s var(--ease) both; }
+#fx .drop.dark { background: #12151c; color: #ffd84d; }
+@keyframes drop { from { transform: translateY(-50vh); } }
+#fx .reveal { position: fixed; inset: 0; display: grid; place-content: center; justify-items: center; text-align: center; gap: 14px; padding: 24px; color: var(--white); animation: rev .5s var(--ease) both; }
+@keyframes rev { from { opacity: 0; transform: scale(1.06); } }
+#fx .reveal .big-ic { font-size: 110px; width: 180px; height: 180px; display: grid; place-items: center; border: 6px solid rgba(255,255,255,.85); border-radius: 36px; }
+#fx .reveal h2 { font-size: clamp(36px, 7vw, 60px); font-weight: 800; }
+#fx .reveal p { max-width: 40ch; margin: 0; font-size: 16px; line-height: 1.55; }
+#fx .reveal small { opacity: .9; font-weight: 600; margin-top: 10px; }
+.shake { animation: shake .4s; }
+@keyframes shake { 20% { transform: translate(-9px, 3px); } 40% { transform: translate(9px, -3px); } 60% { transform: translate(-5px, 2px); } 80% { transform: translate(5px, 0); } }
+/* claw marks: four tapered, slightly curved rips that tear top to bottom one after another */
+.claws { position: absolute; z-index: 2; inset: -6% -10%; width: 120%; height: 112%; overflow: visible; filter: drop-shadow(0 3px 3px rgba(40,0,8,.55)); }
+.claws path { clip-path: inset(0 0 100% 0); animation: rip .26s cubic-bezier(.3,.9,.3,1) both; }
+.claws .core { opacity: .55; }
+@keyframes rip { to { clip-path: inset(0 0 0 0); } }
+.flip { animation: flip 1.1s var(--ease) both !important; } @keyframes flip { 0% { transform: rotateY(90deg); } 100% { transform: rotateY(0); } }
+.ring { position: absolute; left: 0; right: 0; top: 4%; aspect-ratio: 1; border-radius: 50%; border: 6px solid var(--sky); animation: ring 1.3s ease-out infinite; }
+@keyframes ring { from { transform: scale(.85); opacity: 1; } to { transform: scale(1.45); opacity: 0; } }
+.bub-fx { position: absolute; z-index: 2; bottom: 18%; width: 15px; height: 15px; border-radius: 50%; animation: rise 1.6s ease-in both; }
+@keyframes rise { to { transform: translateY(-250px) scale(.5); opacity: 0; } }
+.arrow { position: absolute; z-index: 2; top: 44%; left: -70%; width: 92%; height: 6px; background: var(--wood); animation: shoot .38s ease-in both; }
+.arrow::after { content: ''; position: absolute; right: -16px; top: -9px; border: 12px solid transparent; border-left: 18px solid #c9ced8; }
+@keyframes shoot { to { left: 40%; } }
+.rope { position: absolute; left: 50%; top: -60vh; width: 5px; height: 62vh; background: var(--wood); }
+.swing { transform-origin: 50% -60vh; animation: swing 1.5s var(--ease) both !important; } @keyframes swing { 0% { transform: translateY(-70vh); } 45% { transform: rotate(7deg); } 75% { transform: rotate(-4deg); } 100% { transform: rotate(0); } }
+.sick svg.avatar { animation: sick 1.6s both; } @keyframes sick { to { filter: hue-rotate(80deg) saturate(1.8) brightness(.8); } }
+.dying svg.avatar { animation: dying 1.7s both; } @keyframes dying { to { filter: grayscale(1) brightness(.7); } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01s !important; animation-iteration-count: 1 !important; transition-duration: .01s !important; } }
+
+/* ---------- results ---------- */
+.modal { position: fixed; inset: 0; z-index: 50; background: rgba(19,24,34,.6); display: grid; place-items: center; padding: 16px; }
+.modal > .sheet { width: min(820px, 100%); max-height: 92dvh; overflow: auto; animation: pop .4s var(--ease) both; }
+.result h2 { font-size: clamp(32px, 5.5vw, 52px); font-weight: 800; color: var(--pink); }
+.result .facts { display: flex; gap: 18px; flex-wrap: wrap; font-weight: 700; color: var(--soft); margin: 6px 0 16px; }
+.cast { display: grid; grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); gap: 8px; }
+.actor { text-align: center; font-size: 12.5px; position: relative; padding-bottom: 8px; border-radius: 12px; background: var(--paper); overflow: hidden; }
+.actor .pic { height: 120px; background: var(--sky) var(--trees) bottom / 100% auto no-repeat; position: relative; }
+.actor .pic svg { position: absolute; left: 8%; width: 84%; bottom: 0; height: 92%; }
+.actor b { display: block; font-size: 14px; margin-top: 6px; padding: 0 4px; overflow-wrap: anywhere; }
+.actor .rl { display: flex; gap: 6px; justify-content: center; align-items: center; margin-top: 4px; }
+.actor .how { color: var(--soft); margin-top: 4px; padding: 0 6px; }
+.stamp { position: absolute; top: 6px; right: 6px; z-index: 1; font: 800 11px/1.3 var(--display); letter-spacing: .05em; padding: 3px 8px; border-radius: 99px; }
+.stamp.win { background: var(--mint); color: var(--white); } .stamp.lose { background: rgba(255,255,255,.88); color: var(--soft); }
+.result .acts2, .rolecard .acts2 { display: flex; gap: 8px; justify-content: center; margin-top: 18px; }
+.rolecard { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 16px; align-items: start; }
+.rolecard .rg { font-size: 34px; border-radius: 16px; }
+.rolecard h2 { font-size: 34px; margin-bottom: 6px; }
+.rolecard p { font-size: 16px; margin: 10px 0 0; }
+
+@media (min-width: 901px) {
+  .top { padding-top: 10px; } .top h1 { font-size: 22px; } .top .sub { font-size: 13.5px; }
+  .tile .nm { font-size: 14.5px; top: 6px; } .tile .say { font-size: 13px; top: 28px; }
+  .thread { font-size: 15px; }
+}
+@media (max-width: 900px) {
+  #auth { grid-template-columns: 1fr; align-items: start; }
+  #home .grid, #wardrobe .grid { grid-template-columns: minmax(0, 1fr); }
+  .go .big { font-size: 15px; padding: 14px 12px; }
+  .row { grid-template-columns: 44px minmax(0, 1fr) auto; gap: 10px; padding: 10px; } .row .tile { width: 44px; height: 44px; font-size: 12px; }
+  .profile, .mirror { position: static; }
+  .profile { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 14px; text-align: left; align-items: center; }
+  .profile svg { width: 100px; } .profile .art { padding: 10px 6px 0; }
+  .profile h2 { margin-top: 0; font-size: 26px; } .profile .links { grid-column: 1 / -1; grid-template-columns: repeat(2, 1fr); }
+  .go { grid-template-columns: 1fr 1fr; } .go form { grid-column: 1 / -1; }
+  .mirror #wArt svg { width: 170px; }
+  .stage { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); }
+  .board { aspect-ratio: auto; grid-auto-rows: min(31vw, calc((100dvh - 300px) / 4)); }
+  .tile .nm { font-size: 11.5px; }
+  .poll { display: none; }
+  .event { margin: 4px 0 2px; padding: 6px 10px; font-size: 13.5px; } .event i { font-size: 18px; }
 }
 </style>
 </head>
 <body>
-<div class="sky-orb"></div><div class="hills"></div>
 
 <!-- AUTH -->
-<div id="auth" class="screen hidden">
-  <div class="hero"><div class="title">Ma Sói</div><div class="mut" style="font-size:18px">Làng có sói. Ai là sói?</div><div id="authArt"></div></div>
-  <div class="panel">
-    <div class="tabs"><button id="tabLogin" class="on">Đăng nhập</button><button id="tabReg" class="ghost">Tạo nhân vật</button></div>
+<div id="auth" class="hidden">
+  <div class="invite">
+    <h1>Ma Sói</h1>
+    <p>Mỗi đêm trong làng lại có người chết. Cùng đồng nghiệp tìm ra Ma sói trước khi quá muộn.</p>
+    <div class="crowd" id="authArt"></div>
+  </div>
+  <div class="sheet">
+    <div class="seg"><button id="tabLogin" class="on" type="button">Đăng nhập</button><button id="tabReg" type="button">Tạo nhân vật</button></div>
     <form class="form" id="authForm" autocomplete="on">
-      <input id="aName" placeholder="Tên nhân vật" maxlength="16" autocomplete="username" required>
-      <input id="aPass" type="password" placeholder="Mật khẩu" maxlength="64" autocomplete="current-password" required>
-      <input id="aPass2" type="password" placeholder="Nhập lại mật khẩu" maxlength="64" autocomplete="new-password" class="hidden">
+      <label>Tên nhân vật<input id="aName" maxlength="16" autocomplete="username" required></label>
+      <label>Mật khẩu<input id="aPass" type="password" maxlength="64" autocomplete="current-password" required></label>
+      <label id="aPass2Wrap" class="hidden">Nhập lại mật khẩu<input id="aPass2" type="password" maxlength="64" autocomplete="new-password"></label>
       <button id="aBtn">Vào làng</button>
-      <div class="err" id="aErr"></div>
-      <small class="mut" id="aNote">Chưa có nhân vật? Bấm "Tạo nhân vật" để đăng ký và chọn trang phục.</small>
+      <div class="err" id="aErr" role="alert"></div>
+      <div class="note" id="aNote">Chưa có nhân vật? Chọn "Tạo nhân vật" ở trên.</div>
     </form>
   </div>
 </div>
 
 <!-- HOME -->
 <div id="home" class="screen hidden">
-  <div class="topbar"><div class="title">Ma Sói</div><div style="display:flex;gap:8px;align-items:center"><span class="chip" id="meChip"></span><button class="ghost" id="logout">Đăng xuất</button></div></div>
+  <div class="bar"><div class="wordmark"><i class="ph-bold ph-moon-stars"></i>Ma Sói</div><button class="bare" id="logout"><i class="ph-bold ph-sign-out"></i>Đăng xuất</button></div>
   <div class="grid">
-    <div class="menu">
-      <button class="ghost" data-go="wardrobe">👕 Tủ đồ & Trang phục</button>
-      <button class="ghost" data-go="roles">📖 Bách khoa vai trò</button>
-      <div class="panel"><h3>🏆 Bảng xếp hạng</h3><div id="board" class="mut">Chưa có ai chơi...</div></div>
-    </div>
-    <div class="stage"><div id="homeArt"></div><div class="plinth"></div><div class="nameplate" id="homeName"></div><div class="mut" id="homeStats" style="margin-top:6px;font-weight:700"></div></div>
-    <div class="panel">
-      <button class="bigplay" id="quick">▶ CHƠI NGAY</button>
-      <div style="display:flex;gap:8px;margin-bottom:8px"><button class="blue" id="create" style="flex:1">+ Tạo phòng</button></div>
-      <form style="display:flex;gap:8px" id="joinForm"><input id="code" placeholder="Mã phòng" maxlength="4" style="flex:1;text-transform:uppercase"><button class="ghost">Vào</button></form>
-      <div class="err" id="hErr"></div>
-      <h3 style="margin-top:6px">Phòng đang chờ</h3>
-      <div class="lobbies" id="lobbies"></div>
-    </div>
+    <aside class="profile">
+      <div class="art" id="homeArt"></div>
+      <div><h2 id="homeName"></h2><div class="stats" id="homeStats"></div></div>
+      <div class="links">
+        <button class="sec" data-go="wardrobe"><i class="ph-bold ph-t-shirt"></i>Tủ đồ</button>
+        <button class="sec" data-go="roles"><i class="ph-bold ph-book-open"></i>Vai trò</button>
+        <span id="meChip" class="hidden"></span>
+      </div>
+    </aside>
+    <main class="play">
+      <h2>Hôm nay ai là sói?</h2>
+      <p class="lead">Vào một làng đang chờ, mở làng mới rồi gửi mã cho đồng nghiệp, hoặc nhập mã họ gửi.</p>
+      <div class="go">
+        <button class="big" id="quick"><i class="ph-bold ph-play"></i>Vào chơi ngay</button>
+        <button class="big sec" id="create"><i class="ph-bold ph-plus"></i>Mở làng mới</button>
+        <form id="joinForm"><input id="code" placeholder="MÃ LÀNG" maxlength="4" aria-label="Mã làng"><button class="sec">Vào</button></form>
+      </div>
+      <div class="err" id="hErr" role="alert"></div>
+      <div class="list-h"><h3>Làng đang chờ người</h3></div>
+      <div class="rows" id="lobbies"></div>
+      <div class="list-h"><h3>Bảng vàng</h3></div>
+      <div class="rows" id="board"><div class="empty">Chưa ai thắng ván nào. Bạn là người đầu tiên?</div></div>
+    </main>
   </div>
 </div>
 
 <!-- WARDROBE -->
 <div id="wardrobe" class="screen hidden">
-  <div class="topbar"><div class="title" id="wTitle">Tủ đồ</div><div style="display:flex;gap:8px"><button class="ghost" id="wRandom">🎲 Ngẫu nhiên</button><button class="ghost" id="wCancel">Hủy</button><button id="wSave">Lưu trang phục</button></div></div>
+  <div class="bar"><div class="wordmark" id="wTitle">Tủ đồ</div>
+    <div style="display:flex;gap:8px"><button class="bare" id="wRandom"><i class="ph-bold ph-dice-five"></i>Ngẫu nhiên</button><button class="sec" id="wCancel">Hủy</button><button id="wSave">Lưu</button></div></div>
   <div class="grid">
-    <div class="panel stage"><div id="wArt"></div><div class="plinth"></div><div id="wGrave" style="margin-top:14px"></div></div>
-    <div class="panel"><div class="slots" id="wSlots"></div><div class="items" id="wItems"></div></div>
+    <div class="mirror"><div id="wArt"></div><div id="wGrave"></div></div>
+    <div><div class="chips" id="wSlots"></div><div class="items" id="wItems"></div></div>
   </div>
 </div>
 
 <!-- ROLES -->
 <div id="roles" class="screen hidden">
-  <div class="topbar"><div class="title">Vai trò</div><button class="ghost" data-go="home">← Quay lại</button></div>
+  <div class="bar"><div class="wordmark">Vai trò</div><button class="sec" data-go="home"><i class="ph-bold ph-arrow-left"></i>Quay lại</button></div>
   <div id="roleList"></div>
 </div>
 
 <!-- GAME -->
 <div id="game" class="hidden">
-  <div class="gtop">
-    <span class="phase" id="phase"></span>
-    <div class="tbar"><i id="tfill"></i></div><span class="tnum" id="tnum"></span>
-    <span class="chip" style="padding:4px 14px">Phòng <b id="roomCode" style="letter-spacing:3px"></b></span>
-    <button class="ghost" id="leave">Rời phòng</button>
+  <header class="top">
+    <button id="leave" aria-label="Rời làng"><i class="ph-bold ph-x"></i></button>
+    <div class="ttl"><h1><span id="phase"></span> <span id="tnum"></span></h1><div class="sub">Làng <b id="roomCode"></b>, <span id="tally"></span></div></div>
+    <button id="help" aria-label="Xem vai trò của bạn"><i class="ph-bold ph-question"></i></button>
+    <i class="fuse" id="tfill"></i>
+  </header>
+  <div class="stage">
+    <div class="board" id="seats"></div>
+    <div class="side">
+      <main class="thread" id="log" aria-live="polite"></main>
+      <div>
+        <div class="poll hidden" id="poll"></div>
+        <footer class="dock">
+          <div id="hint"></div>
+          <div id="acts"></div>
+          <div class="composer">
+            <div id="myRole" role="button" tabindex="0" aria-label="Xem vai trò của bạn"></div>
+            <form id="chatForm"><input id="msg" maxlength="200" autocomplete="off" aria-label="Tin nhắn"><button aria-label="Gửi"><i class="ph-bold ph-paper-plane-right"></i></button></form>
+          </div>
+        </footer>
+      </div>
+    </div>
   </div>
-  <div class="col" id="colL"></div>
-  <div class="center">
-    <div class="banner hidden" id="banner"></div>
-    <div class="panel chat"><div class="log" id="log"></div>
-      <form id="chatForm"><input id="msg" placeholder="Nhắn tin..." maxlength="200" autocomplete="off"><button>Gửi</button></form></div>
-    <div class="panel bar"><div class="myrole" id="myRole"></div><div class="acts" id="acts"></div><div class="hint" id="hint"></div></div>
-  </div>
-  <div class="col right" id="colR"></div>
 </div>
 
 <div id="modal" class="modal hidden"></div>
@@ -262,10 +407,15 @@ svg.avatar { display:block; overflow:visible; }
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
-const { ROLES, TEAM, ABIL, ITEMS, SLOTS, SETS, avatarSvg, graveSvg, itemSvg } = AV;
-const ri = role => role ? `<span class="ri" style="--c:${TEAM[ROLES[role].t].c}" title="${ROLES[role].n}">${ROLES[role].i}</span>` : '';
-const teamTag = t => `<span class="tm" style="background:${TEAM[t].c}">${TEAM[t].n}</span>`;
-const WIN = { village:'🏡 Dân làng chiến thắng!', wolf:'🐺 Ma sói chiến thắng!', fool:'🃏 Thằng ngốc chiến thắng!', headhunter:'🎯 Thợ săn đầu người chiến thắng!', serial_killer:'🔪 Sát nhân chiến thắng!', arsonist:'🔥 Kẻ phóng hỏa chiến thắng!', none:'⚰️ Không ai sống sót...' };
+const { ROLES, TEAM, ABIL, ITEMS, SLOTS, SETS, avatarSvg, graveSvg } = AV;
+const ic = n => `<i class="ph-bold ph-${n}" aria-hidden="true"></i>`;
+const RG = { villager:'house-line', seer:'eye', aura_seer:'rainbow', doctor:'first-aid-kit', bodyguard:'shield', witch:'flask', avenger:'sword', gunner:'crosshair', mayor:'identification-badge', detective:'magnifying-glass', priest:'cross', medium:'ghost', cupid:'heart', tough_guy:'barbell', red_lady:'high-heel', loudmouth:'megaphone', flower_child:'flower', werewolf:'paw-print', alpha_werewolf:'crown', wolf_seer:'binoculars', junior_werewolf:'baby', wolf_shaman:'magic-wand', nightmare_werewolf:'skull', fool:'mask-happy', headhunter:'target', serial_killer:'knife', arsonist:'fire' };
+const AG = { see:'eye', aura:'rainbow', protect:'syringe', guard:'shield-check', heal:'heartbeat', poison:'skull', mark:'target', shoot:'crosshair', reveal:'identification-badge', compare:'magnifying-glass', water:'drop', revive:'sparkle', link:'heart', visit:'high-heel', flower:'flower', kill:'paw-print', enchant:'magic-wand', nightmare:'smiley-x-eyes', stab:'knife', douse:'gas-can', ignite:'fire' };
+const ri = role => role ? `<span class="rg t-${ROLES[role].t}" title="${ROLES[role].n}">${ic(RG[role])}</span>` : '';
+const teamTag = t => `<span class="team t-${t}">${TEAM[t].n}</span>`;
+// server copy still carries emoji; the UI speaks through its own icon set
+const plain = s => String(s ?? '').replace(/[\p{Extended_Pictographic}\u{1F1E6}-\u{1F1FF}️‍]/gu, '').replace(/\s{2,}/g, ' ').trim();
+const WIN = { village:'Dân làng thắng', wolf:'Ma sói thắng', fool:'Thằng ngốc thắng', headhunter:'Thợ săn đầu người thắng', serial_killer:'Sát nhân thắng', arsonist:'Kẻ phóng hỏa thắng', none:'Không ai sống sót' };
 
 // ---------- session / api ----------
 let token = sessionStorage.getItem('ms_t') || localStorage.getItem('ms_t'), ME = null;
@@ -285,6 +435,7 @@ function logout(silent) {
 function show(id) {
   for (const s of ['auth', 'home', 'wardrobe', 'roles', 'game']) $(s).classList.toggle('hidden', s !== id);
   if (id !== 'game') document.body.className = '';
+  document.querySelector('meta[name=theme-color]').content = id === 'auth' ? '#79c3e6' : '#ffffff';
   if (id === 'home') renderHome();
   if (id === 'roles') renderRoles();
   window.scrollTo(0, 0);
@@ -293,14 +444,14 @@ document.addEventListener('click', e => { const g = e.target.closest('[data-go]'
 
 // ---------- auth ----------
 let regMode = false;
-$('authArt').innerHTML = avatarSvg(AV.randomAvatar());
+$('authArt').innerHTML = [0, 1, 2, 3].map(() => avatarSvg(AV.randomAvatar())).join('');
 function setReg(on) {
   regMode = on;
-  $('tabLogin').className = on ? 'ghost' : 'on'; $('tabReg').className = on ? 'on' : 'ghost';
-  $('aPass2').classList.toggle('hidden', !on);
+  $('tabLogin').className = on ? '' : 'on'; $('tabReg').className = on ? 'on' : '';
+  $('aPass2Wrap').classList.toggle('hidden', !on);
   $('aPass').autocomplete = on ? 'new-password' : 'current-password';
-  $('aBtn').textContent = on ? 'Tiếp tục → Chọn trang phục' : 'Vào làng';
-  $('aNote').textContent = on ? 'Tên 3–16 ký tự, mật khẩu ít nhất 6 ký tự.' : 'Chưa có nhân vật? Bấm "Tạo nhân vật" để đăng ký và chọn trang phục.';
+  $('aBtn').textContent = on ? 'Tiếp tục: chọn trang phục' : 'Vào làng';
+  $('aNote').textContent = on ? 'Tên từ 3 đến 16 ký tự, mật khẩu ít nhất 6 ký tự.' : 'Chưa có nhân vật? Chọn "Tạo nhân vật" ở trên.';
   $('aErr').textContent = '';
 }
 $('tabLogin').onclick = () => setReg(false);
@@ -310,7 +461,7 @@ $('authForm').onsubmit = async e => {
   const name = $('aName').value.trim(), password = $('aPass').value;
   try {
     if (regMode) {
-      if (password !== $('aPass2').value) throw 'Mật khẩu nhập lại không khớp';
+      if (password !== $('aPass2').value) throw 'Hai mật khẩu chưa khớp nhau';
       const r = await api({ action:'register', name, password, avatar: AV.randomAvatar() });
       setToken(r.token); ME = r.user; openWardrobe(true);
     } else {
@@ -325,30 +476,29 @@ function afterLogin() { ME.room ? connect() : show('home'); }
 // ---------- home ----------
 let lobbyTimer;
 async function renderHome() {
-  $('meChip').innerHTML = avatarSvg(ME.avatar) + esc(ME.name);
   $('homeArt').innerHTML = avatarSvg(ME.avatar);
   $('homeName').textContent = ME.name;
-  $('homeStats').textContent = `🎮 ${ME.stats.games} trận · 🏆 ${ME.stats.wins} thắng`;
+  $('homeStats').textContent = `${ME.stats.games} ván, thắng ${ME.stats.wins}`;
   $('hErr').textContent = '';
   clearInterval(lobbyTimer);
   const load = async () => {
     if ($('home').classList.contains('hidden')) return clearInterval(lobbyTimer);
     try {
       const { lobbies } = await api({ action:'lobbies' });
-      $('lobbies').innerHTML = lobbies.length ? lobbies.map(l => `<div class="lob"><span><b>${l.code}</b> · ${esc(l.host)} · ${l.count}/16 👥</span><button class="ghost" data-join="${l.code}">Vào</button></div>`).join('')
-        : '<div class="mut">Chưa có phòng nào. Tạo phòng mới đi!</div>';
+      $('lobbies').innerHTML = lobbies.length ? lobbies.map(l => `<div class="row"><span class="tile">${l.code}</span><span><b>Làng ${l.code}</b><small>${esc(l.host)} đang chờ, ${l.count}/16 người</small></span><button class="sec" data-join="${l.code}">Vào</button></div>`).join('')
+        : '<div class="empty">Chưa có làng nào mở. Bấm "Mở làng mới" rồi gửi mã cho mọi người.</div>';
     } catch {}
   };
   load(); lobbyTimer = setInterval(load, 4000);
   api({ action:'leaderboard' }).then(({ top }) => {
-    if (top.length) $('board').innerHTML = top.map((t, i) => `<div class="lb">${['🥇','🥈','🥉'][i] || i + 1}${avatarSvg(t.avatar)}<b>${esc(t.name)}</b><span>${t.wins}🏆/${t.games}</span></div>`).join('');
+    if (top.length) $('board').innerHTML = top.map((t, i) => `<div class="row"><span class="rank">${i + 1}</span><span><b>${esc(t.name)}</b><small>Thắng ${t.wins} trên ${t.games} ván</small></span>${avatarSvg(t.avatar)}</div>`).join('');
   }).catch(() => {});
 }
 const enter = body => api(body).then(connect).catch(e => $('hErr').textContent = e);
 $('quick').onclick = () => enter({ action:'quick' });
 $('create').onclick = () => enter({ action:'create' });
 $('joinForm').onsubmit = e => { e.preventDefault(); enter({ action:'join', code: $('code').value.trim().toUpperCase() }); };
-$('lobbies').onclick = e => { const c = e.target.dataset.join; if (c) enter({ action:'join', code: c }); };
+$('lobbies').onclick = e => { const c = e.target.closest('[data-join]')?.dataset.join; if (c) enter({ action:'join', code: c }); };
 $('logout').onclick = () => logout();
 
 // ---------- wardrobe ----------
@@ -363,8 +513,8 @@ function openWardrobe(first) {
 }
 function renderWardrobe() {
   $('wArt').innerHTML = avatarSvg(draft);
-  $('wGrave').innerHTML = `<div class="mut" style="font-weight:700">Bia mộ khi chết</div><div style="width:90px;margin:0 auto">${graveSvg(draft.grave)}</div>`;
-  $('wSlots').innerHTML = [['sets', '✨ Bộ trang phục'], ...SLOTS].map(([k, n]) => `<button class="${k === slot ? '' : 'ghost'}" data-slot="${k}">${n}</button>`).join('');
+  $('wGrave').innerHTML = `${graveSvg(draft.grave)}<span>Bia mộ khi bạn chết</span>`;
+  $('wSlots').innerHTML = [['sets', 'Bộ trang phục'], ...SLOTS].map(([k, n]) => `<button class="${k === slot ? '' : 'sec'}" data-slot="${k}">${n}</button>`).join('');
   if (slot === 'sets') {
     $('wItems').innerHTML = Object.entries(SETS).map(([k, s]) => `<div class="item" data-set="${k}">${avatarSvg(withSet(k))}${s.n}</div>`).join('');
   } else if (slot === 'skin' || slot === 'hairColor') {
@@ -373,7 +523,7 @@ function renderWardrobe() {
     $('wItems').innerHTML = Object.entries(ITEMS[slot]).map(([k, it]) => `<div class="item ${draft[slot] === k ? 'sel' : ''}" data-k="${k}">${slot === 'grave' ? graveSvg(k) : avatarSvg({ ...draft, [slot]: k })}${it.n}</div>`).join('');
   }
 }
-$('wSlots').onclick = e => { const s = e.target.dataset.slot; if (s) { slot = s; renderWardrobe(); } };
+$('wSlots').onclick = e => { const s = e.target.closest('[data-slot]')?.dataset.slot; if (s) { slot = s; renderWardrobe(); } };
 $('wItems').onclick = e => {
   const it = e.target.closest('.item'); if (!it) return;
   if (it.dataset.set) draft = withSet(it.dataset.set); else draft[slot] = it.dataset.k;
@@ -385,9 +535,10 @@ $('wSave').onclick = async () => { ME = (await api({ action:'avatar', avatar: dr
 
 // ---------- roles encyclopedia ----------
 function renderRoles() {
-  $('roleList').innerHTML = Object.keys(TEAM).map(t => `<h3 style="margin:18px 0 10px">${teamTag(t)} ${TEAM[t].n}</h3><div class="rolegrid">` +
-    Object.entries(ROLES).filter(([, r]) => r.t === t).map(([k, r]) => `<div class="panel rc">${ri(k)}<div><b>${r.n}</b><small>${r.d}</small>
-      <div class="abl">${(r.ab || []).map(a => `<span>${ABIL[a.k][1]} ${ABIL[a.k][0]}${a.uses ? ` ×${a.uses}` : ''} · ${a.ph === 'night' ? '🌙' : a.ph === 'day' ? '☀️' : '🌗'}</span>`).join('')}</div></div></div>`).join('') + '</div>').join('');
+  const when = { night:'Ban đêm', day:'Ban ngày', any:'Bất cứ lúc nào' };
+  $('roleList').innerHTML = Object.keys(TEAM).map(t => `<section class="teamblock"><h2>${teamTag(t)}${TEAM[t].n}</h2><div class="roles">` +
+    Object.entries(ROLES).filter(([, r]) => r.t === t).map(([k, r]) => `<div class="role">${ri(k)}<div><b>${r.n}</b><p>${r.d}</p>
+      <div class="abl">${(r.ab || []).map(a => `<span>${ic(AG[a.k])}${ABIL[a.k][0]}${a.uses ? ` ×${a.uses}` : ''}, ${when[a.ph].toLowerCase()}</span>`).join('')}</div></div></div>`).join('') + '</div></section>').join('');
 }
 
 // ---------- game: connection ----------
@@ -406,16 +557,16 @@ function connect() {
   es.onerror = () => { if (es.readyState === 2) { es = null; api({ action:'me' }).then(r => { ME = r.user; ME.room ? connect() : show('home'); }).catch(() => {}); } };
 }
 const act = body => api({ ...body, code: S.code }).catch(err => flash(err));
-function flash(t) { $('hint').textContent = '⚠️ ' + t; $('hint').style.color = '#ff8a80'; setTimeout(() => { $('hint').style.color = ''; S && render(); }, 2200); }
+function flash(t) { $('hint').textContent = t; $('hint').classList.add('warn'); setTimeout(() => { $('hint').classList.remove('warn'); S && render(); }, 2200); }
 $('leave').onclick = async () => {
-  if (S && !['lobby', 'end'].includes(S.phase) && !confirm('Ván đang diễn ra, bạn chắc chắn muốn rời?')) return;
+  if (S && !['lobby', 'end'].includes(S.phase) && !confirm('Ván đang diễn ra. Bạn chắc chắn muốn rời làng?')) return;
   await api({ action:'leave' }).catch(() => {}); es?.close(); es = null; S = null; ME = (await api({ action:'me' })).user; show('home');
 };
 $('chatForm').onsubmit = e => { e.preventDefault(); const t = $('msg').value; $('msg').value = ''; if (t.trim()) act({ action:'chat', text:t }); };
 
 // ---------- game: render ----------
-const PH = { lobby:'🏠 Sảnh chờ', night:'🌙 Đêm', day:'☀️ Ngày', vote:'⚖️ Bỏ phiếu', end:'🏁 Kết thúc' };
-const isWolf = p => p.role && ROLES[p.role].t === 'wolf';
+const isWolf = p => p?.role && ROLES[p.role].t === 'wolf';
+const seatNo = id => S.players.findIndex(p => p.id === id) + 1;
 function targetable(p) {
   if (!S || ['lobby', 'end'].includes(S.phase)) return false;
   const me = S.players.find(x => x.id === S.me.id);
@@ -428,67 +579,111 @@ function targetable(p) {
   }
   return S.phase === 'vote' && S.me.alive && p.alive && p.id !== S.me.id;
 }
-function slotHtml(p, i) {
-  if (!p) return `<div class="slot empty">${avatarSvg(AV.DEFAULT_AVATAR)}<span class="nm">${i + 1}</span></div>`;
-  const votes = Object.values(S.votes).filter(t => t === p.id).length;
-  const myVote = S.votes[S.me.id] === p.id, picked = mode?.picked.includes(p.id);
-  const tags = [p.id === S.me.lover || (S.me.lover && p.id === S.me.id) ? '💘' : '', p.id === S.me.mark ? '🎯' : '', p.id === S.me.hhTarget ? '🎯' : '', p.bot ? '🤖' : ''].join('');
-  return `<div class="slot ${p.alive ? '' : 'dead'} ${p.id === S.me.id ? 'me' : ''} ${targetable(p) ? 'tg' : ''} ${picked || myVote ? 'pk' : ''}" data-id="${p.id}">
-    <span class="no">${i + 1}</span>${p.role ? `<span class="rb">${ri(p.role)}</span>` : ''}${votes ? `<span class="vt">${votes}</span>` : ''}${tags ? `<span class="tag">${tags}</span>` : ''}
-    ${p.alive ? avatarSvg(p.avatar) : graveSvg(p.avatar.grave)}
-    <span class="nm">${esc(p.name)}</span>
-    ${S.phase === 'lobby' && S.host === S.me.id && p.id !== S.me.id ? `<button class="ghost kick" data-kick="${p.id}">✕</button>` : ''}
-    ${S.phase === 'lobby' && S.host === p.id ? '<span class="tag" style="top:-4px;left:44%">👑</span>' : ''}</div>`;
+// speech bubbles: the last thing each player said hangs over their tile for a few seconds
+const says = {};
+const dying = {}; // player id -> until: tile plays its death beat
+let wasAlive = {};
+function tileParts(p, i) {
+  if (!p) return ['tile', ''];
+  const showVotes = S.phase === 'vote' || S.phase === 'night';
+  const target = showVotes && S.votes[p.id];
+  const got = showVotes ? Object.values(S.votes).filter(t => t === p.id).length : 0;
+  const picked = mode?.picked.includes(p.id) || (showVotes && S.votes[S.me.id] === p.id);
+  const tags = [p.id === S.me.lover || (S.me.lover && p.id === S.me.id) ? ic('heart') : '', p.id === S.me.mark || p.id === S.me.hhTarget ? ic('target') : ''].join('');
+  const kickable = S.phase === 'lobby' && S.host === S.me.id && p.id !== S.me.id;
+  const say = says[p.id] && says[p.id].until > Date.now() ? `<div class="say"><span>${esc(says[p.id].t)}</span></div>` : '';
+  const cls = ['tile', p.alive ? '' : 'dead', p.id === S.me.id ? 'me' : '', targetable(p) ? 'tg' : '', picked ? 'pk' : '', dying[p.id] > Date.now() ? 'dying' : ''].join(' ');
+  return [cls, `<span class="nm">${i + 1} ${esc(p.name)}</span>
+    ${p.alive ? avatarSvg(p.avatar, '', true) : graveSvg(p.avatar.grave, '', true)}
+    ${target ? `<span class="sign">${seatNo(target)}</span>` : ''}
+    ${got ? `<span class="hand">${ic('hand-pointing')}<b>${got}</b></span>` : ''}${say}
+    ${p.role ? ri(p.role) : ''}${tags ? `<span class="tags">${tags}</span>` : ''}
+    ${S.phase === 'lobby' && S.host === p.id ? `<i class="ph-bold ph-crown-simple host" aria-label="Chủ phòng"></i>` : ''}
+    ${kickable ? `<button class="kick" data-kick="${p.id}" aria-label="Mời ${esc(p.name)} ra">${ic('x')}</button>` : ''}`, p];
 }
+// tiles persist between renders so the night/dawn wave can transition each one in turn
+function paintBoard() {
+  const board = $('seats');
+  if (board.querySelectorAll('.tile').length !== 16) board.innerHTML = Array.from({ length: 16 }, (_, i) => `<div class="tile" style="--i:${(i % 4) + Math.floor(i / 4)}"></div>`).join('');
+  for (const p of S.players) {
+    if (wasAlive[p.id] && !p.alive) { dying[p.id] = Date.now() + 1800; setTimeout(render, 1900); }
+  }
+  board.dataset.rows = Math.max(2, Math.ceil(S.players.length / 4));
+  board.parentElement.style.setProperty('--rows', board.dataset.rows);
+  wasAlive = Object.fromEntries(S.players.map(p => [p.id, p.alive]));
+  board.querySelectorAll('.tile').forEach((el, i) => {
+    const [cls, html, p] = tileParts(S.players[i], i);
+    el.className = cls;
+    if (p) { el.dataset.id = p.id; el.title = `${i + 1} ${p.name}`; } else { delete el.dataset.id; el.removeAttribute('title'); }
+    if (el.innerHTML !== html) el.innerHTML = html;
+  });
+}
+const PHASE = { lobby: () => 'Sảnh chờ', night: () => `Đêm ${S.day}`, day: () => 'Thảo luận', vote: () => 'Bỏ phiếu', end: () => WIN[S.winner] || 'Hết ván' };
 function hint() {
-  const r = S.me.role;
-  if (S.phase === 'lobby') return S.host === S.me.id ? `Mời bạn bè vào mã ${S.code} hoặc thêm bot. Cần 4–16 người.` : 'Chờ chủ phòng bắt đầu...';
-  if (S.phase === 'end') return S.host === S.me.id ? 'Bấm "Chơi lại" để mở ván mới.' : 'Chờ chủ phòng mở ván mới...';
-  if (!S.me.alive) return '👻 Bạn đã chết. Bạn có thể chat với những người chết khác.';
-  if (mode) return `${ABIL[mode.ab.k][1]} Chọn ${mode.ab.n - mode.picked.length} người để ${ABIL[mode.ab.k][0].toLowerCase()}`;
-  if (S.blocked) return '😱 Bạn đang gặp ác mộng, đêm nay không thể hành động.';
-  if (S.phase === 'vote') return 'Bấm vào người bạn nghi ngờ để bỏ phiếu treo cổ (có thể đổi phiếu).';
-  if (S.phase === 'day') return 'Thảo luận trong chat. Sắp đến giờ bỏ phiếu...';
-  if (S.phase === 'night') return S.abilities.some(a => a.ok) ? (S.witchTarget ? `🐺 Sói đang nhắm ${S.witchTarget}. ` : '') + 'Chọn kỹ năng bên trên để hành động.' : '💤 Bạn đang ngủ...';
+  if (S.phase === 'lobby') return S.host === S.me.id ? `Gửi mã ${S.code} cho đồng nghiệp hoặc thêm bot. Cần 4 đến 16 người.` : 'Đang chờ chủ phòng bắt đầu.';
+  if (S.phase === 'end') return S.host === S.me.id ? 'Bấm "Chơi lại" để mở ván mới với cả nhóm.' : 'Đang chờ chủ phòng mở ván mới.';
+  if (!S.me.alive) return 'Bạn đã chết. Bạn vẫn chat được với những người đã chết.';
+  if (mode) return `Chọn ${mode.ab.n - mode.picked.length} người để ${ABIL[mode.ab.k][0].toLowerCase()}.`;
+  if (S.blocked) return 'Bạn đang gặp ác mộng, đêm nay không làm gì được.';
+  if (S.phase === 'vote') return 'Bấm vào một người để bỏ phiếu treo cổ. Có thể đổi phiếu.';
+  if (S.phase === 'day') return 'Thảo luận xem ai là sói. Hết giờ sẽ bỏ phiếu.';
+  if (S.phase === 'night') return S.abilities.some(a => a.ok) ? (S.witchTarget ? `Sói đang nhắm ${S.witchTarget}. ` : '') + 'Chọn kỹ năng rồi bấm vào một người.' : 'Bạn đang ngủ. Đợi trời sáng.';
   return '';
+}
+const EVENT = { night: 'moon', day: 'sun', vote: 'scales', start: 'dice-five', end: 'trophy' };
+function msgHtml(m) {
+  const t = plain(m.text);
+  if (m.ch === 'priv') return `<div class="ln priv">${esc(t)}</div>`;
+  if (!m.name) return EVENT[m.fx] ? `<div class="event"><span>${esc(t)}</span>${ic(EVENT[m.fx])}</div>` : `<div class="ln sys">${esc(t)}</div>`;
+  const mine = m.from === S.me.id, tag = m.ch === 'wolf' ? ' (sói)' : m.ch === 'dead' ? ' (hồn ma)' : '';
+  return `<div class="ln ${m.ch} ${mine ? 'mine' : ''}"><b>${seatNo(m.from) || ''} ${esc(m.name)}${tag}:</b> ${esc(m.text)}</div>`;
+}
+function pollHtml() {
+  const alive = S.players.filter(p => p.alive), counts = {};
+  Object.values(S.votes).forEach(t => counts[t] = (counts[t] || 0) + 1);
+  const max = Math.max(1, ...Object.values(counts)), voted = Object.keys(S.votes).length;
+  return `<h3>${ic('scales')}Treo cổ ai? <small style="font-weight:600;color:var(--soft)">${voted}/${alive.length} đã bỏ phiếu</small></h3><div class="opts">` +
+    alive.map(p => `<button class="opt ${S.votes[S.me.id] === p.id ? 'mine' : ''}" data-vote="${p.id}" ${!S.me.alive || p.id === S.me.id ? 'disabled' : ''}>
+      <i class="fill" style="transform:scaleX(${(counts[p.id] || 0) / max})"></i><span class="n">${seatNo(p.id)}</span><span>${esc(p.name)}</span><b>${counts[p.id] || ''}</b></button>`).join('') + '</div>';
 }
 function render() {
   if (!S) return;
   const me = S.players.find(p => p.id === S.me.id);
-  document.body.className = ['day', 'vote'].includes(S.phase) ? 'day' : '';
-  $('phase').textContent = PH[S.phase] + (['night', 'day', 'vote'].includes(S.phase) ? ' ' + S.day : '');
+  const wasNight = document.body.classList.contains('night');
+  document.body.classList.toggle('night', S.phase === 'night');
+  document.querySelector('meta[name=theme-color]').content = S.phase === 'night' ? '#12151c' : '#ffffff';
+  if (wasNight && S.phase !== 'night') { document.body.classList.add('dawn'); setTimeout(() => document.body.classList.remove('dawn'), 2600); }
+  $('phase').textContent = PHASE[S.phase]();
   $('roomCode').textContent = S.code;
-  const slots = Array.from({ length: 16 }, (_, i) => slotHtml(S.players[i], i));
-  $('colL').innerHTML = slots.slice(0, 8).join('');
-  $('colR').innerHTML = slots.slice(8).join('');
+  const alive = S.players.filter(p => p.alive).length;
+  $('tally').textContent = S.phase === 'lobby' ? `${S.players.length} người trong làng` : `${alive} còn sống`;
+  paintBoard();
 
   const role = S.me.role;
-  $('myRole').innerHTML = role ? `${ri(role)}<span>${ROLES[role].n}</span>` : `<span class="ri">❔</span><span>Chưa có vai</span>`;
+  $('myRole').innerHTML = role ? ri(role) : `<span class="rg t-village">${ic('mask-happy')}</span>`;
   const acts = [];
   if (['lobby', 'end'].includes(S.phase) && S.host === S.me.id) {
-    acts.push(`<button data-a="start" ${S.players.length < 4 ? 'disabled' : ''}>${S.phase === 'end' ? '🔁 Chơi lại' : '▶ Bắt đầu'} (${S.players.length})</button>`);
-    if (S.phase === 'lobby') acts.push(`<button class="ghost" data-a="addbot" ${S.players.length >= 16 ? 'disabled' : ''}>🤖 Thêm bot</button>`);
+    if (S.phase === 'lobby') acts.push(`<button class="sec" data-a="addbot" ${S.players.length >= 16 ? 'disabled' : ''}>${ic('robot')}Thêm bot</button>`);
+    acts.push(`<button data-a="start" ${S.players.length < 4 ? 'disabled' : ''}>${ic('play')}${S.phase === 'end' ? 'Chơi lại' : 'Bắt đầu'} (${S.players.length})</button>`);
   }
-  if (S.phase === 'end') acts.push(`<button class="ghost" data-a="result">📊 Kết quả</button>`);
+  if (S.phase === 'end') acts.push(`<button class="sec" data-a="result">${ic('trophy')}Kết quả</button>`);
   S.abilities.forEach((a, i) => {
-    if (!a.ok) return;
-    acts.push(`<button class="${mode?.ab.k === a.k ? 'on' : 'blue'}" data-ab="${i}">${ABIL[a.k][1]} ${ABIL[a.k][0]}${a.left != null ? ` (${a.left})` : ''}</button>`);
+    if (a.ok) acts.push(`<button class="${mode?.ab.k === a.k ? 'on' : ''}" data-ab="${i}">${ic(AG[a.k])}${ABIL[a.k][0]}${a.left != null ? ` (${a.left})` : ''}</button>`);
   });
-  if (S.canPass) acts.push(`<button class="ghost" data-a="pass">Bỏ qua</button>`);
+  if (S.canPass) acts.push(`<button class="sec" data-a="pass">Bỏ qua</button>`);
   $('acts').innerHTML = acts.join('');
-  $('hint').textContent = hint();
-  $('leave').textContent = ['lobby', 'end'].includes(S.phase) ? 'Rời phòng' : 'Thoát';
+  if (!$('hint').classList.contains('warn')) $('hint').textContent = hint();
 
-  $('banner').classList.toggle('hidden', S.phase !== 'end');
-  $('banner').textContent = WIN[S.winner] || '';
+  $('poll').classList.toggle('hidden', S.phase !== 'vote');
+  if (S.phase === 'vote') $('poll').innerHTML = pollHtml();
 
   const log = $('log'), stick = log.scrollTop + log.clientHeight >= log.scrollHeight - 40;
-  const num = id => S.players.findIndex(p => p.id === id) + 1;
-  log.innerHTML = S.msgs.filter(m => m.text).map(m => `<div class="m ${m.ch}">${m.name ? `<b>${m.ch === 'wolf' ? '🐺 ' : m.ch === 'dead' ? '👻 ' : ''}${num(m.from) || ''} ${esc(m.name)}:</b> ` : ''}${esc(m.text)}</div>`).join('');
+  log.innerHTML = S.msgs.filter(m => m.text).map(msgHtml).join('') +
+    '';
   if (stick) log.scrollTop = log.scrollHeight;
-  const night = S.phase === 'night', canTalk = !['night'].includes(S.phase) || !S.me.alive || isWolf(me) || S.me.role === 'medium';
+  const canTalk = S.phase !== 'night' || !S.me.alive || isWolf(me) || S.me.role === 'medium';
   $('msg').disabled = !canTalk;
-  $('msg').placeholder = !canTalk ? 'Ban đêm làng im lặng... 🤫' : !S.me.alive && !['lobby', 'end'].includes(S.phase) ? 'Chat với người chết...' : night && isWolf(me) ? 'Thì thầm với bầy sói...' : night ? 'Trò chuyện với người chết...' : 'Nhắn tin...';
+  $('msg').placeholder = !canTalk ? 'Ban đêm làng im lặng' : !S.me.alive && !['lobby', 'end'].includes(S.phase) ? 'Nhắn cho những người đã chết' : S.phase === 'night' && isWolf(me) ? 'Thì thầm với bầy sói' : S.phase === 'night' ? 'Trò chuyện với người chết' : 'Gửi tin nhắn';
   renderResult();
 }
 function clickPlayer(id) {
@@ -499,11 +694,12 @@ function clickPlayer(id) {
   if (mode.picked.length === mode.ab.n) { act({ action:'act', k: mode.ab.k, targets: mode.picked }); mode = null; }
   render();
 }
-for (const c of ['colL', 'colR']) $(c).onclick = e => {
-  const k = e.target.dataset.kick;
+$('seats').onclick = e => {
+  const k = e.target.closest('[data-kick]')?.dataset.kick;
   if (k) return act({ action:'kick', target:k });
-  const s = e.target.closest('.slot[data-id]'); if (s) clickPlayer(s.dataset.id);
+  const s = e.target.closest('.tile[data-id]'); if (s) clickPlayer(s.dataset.id);
 };
+$('poll').onclick = e => { const v = e.target.closest('[data-vote]')?.dataset.vote; if (v) act({ action:'vote', target:v }); };
 $('acts').onclick = e => {
   const b = e.target.closest('button'); if (!b) return;
   if (b.dataset.ab) {
@@ -516,19 +712,25 @@ $('acts').onclick = e => {
   if (a === 'result') { resultOpen = true; renderResult(); }
   else if (a) act({ action:a });
 };
-$('myRole').onclick = () => {
+function openRole() {
   const r = S?.me.role; if (!r) return;
-  $('modal').innerHTML = `<div class="panel"><div class="rc">${ri(r).replace('class="ri"', 'class="ri" style="font-size:40px;--c:' + TEAM[ROLES[r].t].c + '"')}<div><h2 style="text-align:left">${ROLES[r].n}</h2>${teamTag(ROLES[r].t)}<small style="font-size:16px;margin-top:8px">${ROLES[r].d}</small></div></div><div style="text-align:center;margin-top:14px"><button data-close>Đóng</button></div></div>`;
-  $('modal').classList.remove('hidden');
-};
+  const m = $('modal'); m.dataset.kind = 'role';
+  m.innerHTML = `<div class="sheet"><div class="rolecard">${ri(r)}<div><h2>${ROLES[r].n}</h2>${teamTag(ROLES[r].t)}<p>${ROLES[r].d}</p></div></div><div class="acts2"><button data-close>Đã hiểu</button></div></div>`;
+  m.classList.remove('hidden');
+}
+$('myRole').onclick = openRole;
+$('help').onclick = openRole;
+$('myRole').onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openRole(); } };
 $('modal').onclick = e => {
-  if (e.target.dataset.close != null || e.target === $('modal')) { $('modal').classList.add('hidden'); resultOpen = false; }
-  if (e.target.dataset.a === 'start') act({ action:'start' });
+  if (e.target.closest('[data-close]') || e.target === $('modal')) { $('modal').classList.add('hidden'); $('modal').dataset.kind = ''; resultOpen = false; }
+  if (e.target.closest('[data-a="start"]')) act({ action:'start' });
 };
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('modal').classList.contains('hidden')) $('modal').click(); });
 setInterval(() => {
-  const left = endAt ? Math.max(0, endAt - Date.now()) : 0;
-  $('tnum').textContent = endAt ? Math.ceil(left / 1000) + 's' : '';
-  $('tfill').style.width = endAt ? (left / total * 100) + '%' : '0';
+  const left = endAt ? Math.max(0, endAt - Date.now()) : 0, sec = Math.ceil(left / 1000);
+  $('tnum').textContent = endAt ? sec + 's' : '';
+  $('tnum').classList.toggle('low', !!endAt && sec <= 10);
+  $('tfill').style.transform = `scaleX(${endAt ? left / total : 0})`;
 }, 250);
 
 // ---------- results ----------
@@ -537,37 +739,39 @@ function renderResult() {
   if (!(resultOpen && S.phase === 'end' && !fxBusy)) { if (m.dataset.kind === 'result') { m.classList.add('hidden'); m.dataset.kind = ''; } return; }
   const alive = S.players.filter(p => p.alive).length;
   m.dataset.kind = 'result';
-  m.innerHTML = `<div class="panel"><h2>${WIN[S.winner]}</h2>
-    <div class="stats"><span>📅 ${S.day} ngày đêm</span><span>👥 ${S.players.length} người</span><span>❤️ ${alive} sống sót</span><span>💀 ${S.players.length - alive} đã chết</span></div>
-    <div class="res">${[...S.players].sort((a, b) => b.won - a.won).map(p => `<div class="rp ${p.won ? 'win' : ''}">
-      ${p.alive ? avatarSvg(p.avatar) : graveSvg(p.avatar.grave)}<b>${esc(p.name)}</b>${ri(p.role)} ${ROLES[p.role].n}<br>${teamTag(ROLES[p.role].t)}
-      <div class="mut">${p.alive ? '❤️ Sống sót' : `💀 ${p.death.night ? 'Đêm' : 'Ngày'} ${p.death.day}: ${esc(p.death.how)}`}</div>
-      <div style="font-weight:800;color:${p.won ? 'var(--green)' : 'var(--mut)'}">${p.won ? '🏆 THẮNG' : 'Thua'}</div></div>`).join('')}</div>
-    <div style="display:flex;gap:8px;justify-content:center;margin-top:14px">${S.host === S.me.id ? '<button data-a="start">🔁 Chơi lại</button>' : ''}<button class="ghost" data-close>Đóng</button></div></div>`;
+  m.innerHTML = `<div class="sheet result"><h2>${WIN[S.winner]}</h2>
+    <div class="facts"><span>${S.day} ngày đêm</span><span>${S.players.length} người chơi</span><span>${alive} sống sót</span></div>
+    <div class="cast">${[...S.players].sort((a, b) => b.won - a.won).map(p => `<div class="actor">
+      <span class="stamp ${p.won ? 'win' : 'lose'}">${p.won ? 'THẮNG' : 'THUA'}</span>
+      <div class="pic">${p.alive ? avatarSvg(p.avatar, '', true) : graveSvg(p.avatar.grave, '', true)}</div><b>${seatNo(p.id)} ${esc(p.name)}</b>
+      <div class="rl">${ri(p.role)}${ROLES[p.role].n}</div>
+      <div class="how">${p.alive ? 'Sống sót' : `${p.death.night ? 'Đêm' : 'Ngày'} ${p.death.day}: ${esc(p.death.how)}`}</div></div>`).join('')}</div>
+    <div class="acts2">${S.host === S.me.id ? `<button data-a="start">${ic('play')}Chơi lại</button>` : ''}<button class="sec" data-close>Đóng</button></div></div>`;
   m.classList.remove('hidden');
 }
 
-// ---------- ability animations ----------
-const claws = () => [-28, -18, -8].map((r, i) => `<div class="claw" style="--r:${r}deg;top:${30 + i * 16}%;animation-delay:${.15 + i * .1}s"></div>`).join('');
-const bubbles = c => Array.from({ length: 16 }, () => `<div class="bub" style="left:${5 + Math.random() * 90}%;background:${c};animation-delay:${Math.random() * .8}s;box-shadow:0 0 10px ${c}"></div>`).join('');
-const glow = c => `<div class="glow" style="background:radial-gradient(${c},transparent 65%)"></div>`;
+// ---------- reactions: every ability and death slaps a sticker ----------
+// each rip is a crescent (thin at both ends, widest mid-stroke) so it reads as a torn gash, not a bar
+const claws = () => '<svg class="claws" viewBox="0 0 200 200" aria-hidden="true"><defs><linearGradient id="gash" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4a000c"/><stop offset=".5" stop-color="#d4213a"/><stop offset="1" stop-color="#4a000c"/></linearGradient></defs>' +
+  [[-38, 0, .94], [-13, -6, 1], [12, -3, .98], [37, 4, .9]].map(([dx, dy, k], i) => {
+    const x = v => (100 + (v - 100) * k + dx).toFixed(1), y = v => (100 + (v - 100) * k + dy).toFixed(1);
+    const d = `M${x(150)} ${y(16)} C${x(126)} ${y(70)} ${x(94)} ${y(126)} ${x(46)} ${y(184)} C${x(105)} ${y(128)} ${x(140)} ${y(73)} ${x(150)} ${y(16)}Z`;
+    const c = `M${x(149)} ${y(30)} C${x(128)} ${y(76)} ${x(100)} ${y(122)} ${x(64)} ${y(166)} C${x(104)} ${y(124)} ${x(134)} ${y(78)} ${x(149)} ${y(30)}Z`;
+    const delay = `style="animation-delay:${(.1 + i * .07).toFixed(2)}s"`;
+    return `<path d="${d}" fill="url(#gash)" stroke="#2a0006" stroke-width=".8" ${delay}/><path class="core" d="${c}" fill="#ff8a96" ${delay}/>`;
+  }).join('') + '</svg>';
+const bubbles = c => Array.from({ length: 14 }, () => `<div class="bub-fx" style="left:${6 + Math.random() * 88}%;background:${c};animation-delay:${Math.random() * .7}s"></div>`).join('');
 const FX = {
-  night: { big: '🌙 Màn đêm buông xuống', bg: '#000' }, day: { big: '☀️ Trời sáng', bg: '#ffcf5a' }, vote: { big: '⚖️ Bỏ phiếu!', bg: '#a34d10' }, start: { big: '🎭 Chia vai!', bg: '#4b2e83' },
-  kill: { bg: '#600', layer: claws, cap: '🐺 Bầy sói đã chọn con mồi' }, bite: { bg: '#800', layer: claws, shake: 1, cls: 'dying' },
-  stab: { bg: '#500', layer: claws, shake: 1, cls: 'dying' }, avenge: { bg: '#600', layer: claws, shake: 1, cls: 'dying' },
-  poisoned: { bg: '#2a3a10', layer: () => bubbles('#9cff4a'), cls: 'sick' }, fire: { bg: '#a33a00', layer: () => bubbles('#ff7a1c'), shake: 1, cls: 'dying' },
-  lynch: { bg: '#222', layer: () => '<div class="rope"></div>', cls: 'swing' }, shot: { bg: '#4a3a1c', layer: () => '<div class="arrow"></div>', shake: 1, cls: 'dying' },
-  water: { bg: '#1f4f72', layer: () => bubbles('#8fd3ff'), cls: 'dying' }, heartbreak: { bg: '#6b2a52', layer: () => bubbles('#ff6b8b'), cls: 'dying' },
-  see: { bg: '#4b2e83', layer: () => glow('#b48cff88'), cls: 'flip' }, aura: { bg: '#2b4b83', layer: () => glow('#8cffe988'), cls: 'flip' },
-  compare: { bg: '#3a3a3a', layer: () => glow('#ffffff55') }, enchant: { bg: '#3a1f55', layer: () => glow('#d36bff88') },
-  protect: { bg: '#1f4f72', layer: () => '<div class="ring"></div><div class="ring" style="animation-delay:.5s"></div>' },
-  guard: { bg: '#1f4f72', layer: () => '<div class="ring"></div><div class="ring" style="animation-delay:.5s;border-color:#ffd84a"></div>' },
-  heal: { bg: '#1f6a3a', layer: () => bubbles('#6dff8a') }, poison: { bg: '#3a1f55', layer: () => bubbles('#b35cff') },
-  revive: { bg: '#fff3b0', layer: () => bubbles('#ffe36e') + glow('#fff6c288') }, link: { bg: '#6b2a52', layer: () => bubbles('#ff6b8b') },
-  flower: { bg: '#6b2a52', layer: () => bubbles('#f78fb3') }, visit: { bg: '#6b1a2a', layer: () => glow('#ff4a6a66') },
-  mark: { bg: '#5a1a1a', layer: () => glow('#ff4a4a66') }, reveal: { bg: '#5a4a10', layer: () => glow('#ffd84a88') },
-  nightmare: { bg: '#120820', layer: () => bubbles('#5b2d82'), shake: 1 }, douse: { bg: '#5a3a10', layer: () => bubbles('#ffb84a') },
-  ignite: { bg: '#a33a00', layer: () => bubbles('#ff5a1c'), shake: 1 },
+  start: { reveal: 1 },
+  kill: { bg: '#e5394d', layer: claws, cap: 'Bầy sói đã chọn con mồi' }, stab: { bg: '#e5394d', layer: claws, shake: 1 },
+  see: { bg: '#1e5cf0', cls: 'flip' }, aura: { bg: '#22b892', cls: 'flip' }, compare: { bg: '#1e5cf0' }, enchant: { bg: '#1e5cf0', layer: () => bubbles('#ffe94a') },
+  protect: { bg: '#1e5cf0', layer: () => '<div class="ring"></div><div class="ring" style="animation-delay:.45s"></div>' },
+  guard: { bg: '#1e5cf0', layer: () => '<div class="ring"></div><div class="ring" style="animation-delay:.45s;border-color:#ffe94a"></div>' },
+  heal: { bg: '#22b892', layer: () => bubbles('#22b892') }, poison: { bg: '#151515', layer: () => bubbles('#9cff4a') },
+  revive: { bg: '#ffe94a', layer: () => bubbles('#ffe94a') }, link: { bg: '#ff4b2b', layer: () => bubbles('#ff9db0') },
+  flower: { bg: '#ff9db0', layer: () => bubbles('#ff9db0') }, visit: { bg: '#ff4b2b' }, mark: { bg: '#ff4b2b' }, reveal: { bg: '#ffe94a' },
+  nightmare: { bg: '#151515', layer: () => bubbles('#55574f'), shake: 1 }, douse: { bg: '#ffe94a', layer: () => bubbles('#ffb84a') },
+  ignite: { bg: '#ff4b2b', layer: () => bubbles('#ffe94a'), shake: 1 },
 };
 let fxQ = [], fxBusy = false;
 function playFx() {
@@ -575,19 +779,28 @@ function playFx() {
   fxBusy = true;
   const m = fxQ.shift(), f = FX[m.fx], el = $('fx');
   const art = m.av ? avatarSvg(m.av) : m.role ? ri(m.role) : '';
-  el.innerHTML = `<div class="fl" style="background:radial-gradient(${f.bg},transparent 70%)"></div>` + (f.big ? `<div class="big">${f.big}${m.fx === 'night' || m.fx === 'day' ? ' ' + S.day : ''}</div>` :
-    `<div class="card ${f.cls || ''}">${f.layer ? f.layer() : ''}${art}<div class="cap">${esc(f.cap || m.text)}</div></div>`);
+  const R = S.me.role && ROLES[S.me.role], RC = { village: '#1fa37a', wolf: '#e5394d', solo: '#f08a24' };
+  el.innerHTML = f.reveal && R
+    ? `<div class="reveal" style="background:${RC[R.t]}"><div class="big-ic">${ic(RG[S.me.role])}</div><h2>${R.n}</h2><span class="team t-${R.t}" style="background:rgba(0,0,0,.2)">${TEAM[R.t].n}</span><p>${R.d}</p><small>Ván bắt đầu ngay bây giờ</small></div>`
+    : f.drop
+    ? `<div class="wash" style="background:${f.dark ? '#151515' : '#ffe94a'}"></div><div class="drop ${f.dark ? 'dark' : ''}">${ic(f.icon)}${f.drop}${['night', 'day'].includes(m.fx) ? ' ' + S.day : ''}</div>`
+    : `<div class="wash" style="background:radial-gradient(${f.bg}, transparent 70%)"></div><div class="card ${f.cls || ''}">${f.layer ? f.layer() : ''}${art}<div class="cap">${esc(f.cap || plain(m.text))}</div></div>`;
+  // ability cards sit in the board's own grid cell, so the browser keeps them on the board through any resize
+  if (f.reveal || !S) document.body.appendChild(el); else $('seats').appendChild(el);
+  el.classList.toggle('on-board', !f.reveal);
   el.classList.remove('hidden');
   if (f.shake) { document.body.classList.remove('shake'); void document.body.offsetWidth; document.body.classList.add('shake'); }
-  setTimeout(() => { el.classList.add('hidden'); fxBusy = false; playFx(); render(); }, f.big ? 1500 : 2300);
+  setTimeout(() => { el.classList.add('hidden'); fxBusy = false; playFx(); render(); }, f.reveal ? 4200 : f.drop ? 1400 : 2300);
 }
 // animate only messages newer than what this tab already saw (no replay on reconnect)
 function queueFx() {
   const fresh = lastSeq === null ? [] : S.msgs.filter(m => m.n > lastSeq);
   if (S.msgs.length) lastSeq = S.msgs[S.msgs.length - 1].n; else lastSeq ??= 0;
   for (const m of fresh) {
+    if (m.name && m.ch !== 'priv') { says[m.from] = { t: m.text, until: Date.now() + 5000 }; setTimeout(render, 5100); }
     if (m.fx === 'end') resultOpen = true;
-    else if (FX[m.fx]) fxQ.push(m);
+    // deaths and phase changes play on the board itself (tile beat, night/dawn wave), like the reference
+    else if (FX[m.fx] && !(m.ch === 'sys' && m.fx === 'stab')) fxQ.push(m);
   }
   playFx();
 }

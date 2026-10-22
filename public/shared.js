@@ -67,7 +67,7 @@ const HAIR = {
 
 const eyePair = f => f(48) + f(72);
 const EYES = {
-  dot: { n: 'Tròn', f: () => eyePair(x => `<ellipse cx="${x}" cy="62" rx="3.8" ry="4.8" fill="${INK}"/><circle cx="${x + 1.3}" cy="60.3" r="1.3" fill="#fff"/>`) },
+  dot: { n: 'Tròn', f: () => eyePair(x => `<ellipse cx="${x}" cy="62" rx="5.4" ry="6" fill="#fff" stroke="${INK}" stroke-width="1.1"/><circle cx="${x + .6}" cy="62.8" r="3.6" fill="#6b4226"/><circle cx="${x + .6}" cy="62.8" r="1.8" fill="#160f0f"/><circle cx="${x + 1.9}" cy="61" r="1.2" fill="#fff"/>` + S(`M${x - 5.8} 59.6 Q${x} 54.6 ${x + 5.8} 59.6`, INK, 2)) },
   sparkle: { n: 'Lấp lánh', f: () => eyePair(x => `<circle cx="${x}" cy="62" r="6.5" fill="${INK}"/><circle cx="${x + 2}" cy="59.5" r="2.4" fill="#fff"/><circle cx="${x - 2}" cy="64.5" r="1.1" fill="#fff"/>`) },
   happy: { n: 'Vui vẻ', f: () => eyePair(x => S(`M${x - 5} 64 Q${x} 57 ${x + 5} 64`, INK, 3)) },
   closed: { n: 'Nhắm', f: () => eyePair(x => S(`M${x - 5} 61 Q${x} 66 ${x + 5} 61`, INK, 3)) },
@@ -232,26 +232,42 @@ function cleanAvatar(a) {
 }
 function randomAvatar() {
   const pick = o => { const k = Object.keys(o); return k[Math.floor(Math.random() * k.length)]; };
-  const a = {}; for (const k of Object.keys(ITEMS)) a[k] = pick(ITEMS[k]);
-  if (Math.random() < .5) Object.assign(a, SETS[pick(SETS)].a);
-  return a;
+  // one coherent outfit set over a friendly face, so random looks never stack face covers
+  const any = a => a[Math.floor(Math.random() * a.length)];
+  const face = { skin: any(['s1', 's2', 's3', 's4', 's5', 's6']), hair: any(['short', 'bob', 'long', 'ponytail', 'bun', 'curly', 'twintails', 'spiky']),
+    hairColor: pick(HAIRC), eyes: any(['dot', 'dot', 'happy', 'sparkle', 'wink']), mouth: any(['smile', 'grin', 'smirk', 'open', 'cat']), grave: pick(GRAVE) };
+  return { ...DEFAULT_AVATAR, ...face, ...SETS[pick(SETS)].a };
 }
 
 const VB = 'viewBox="0 -12 120 172"';
-function avatarSvg(a, cls = '') {
+// bust: head and chest only, the framing used inside player tiles
+const VB_BUST = 'viewBox="-6 -14 132 132" preserveAspectRatio="xMidYMax meet"';
+const BROWS = { angry: 1, wolf: 1, closed: 1, sleepy: 1 };
+const NO_SHINE = { none: 1, curly: 1, mohawk: 1 };
+// multiply a #rrggbb colour: f < 1 darkens (shadows), f > 1 lightens (highlights)
+const shade = (hex, f) => '#' + hex.slice(1).match(/../g).map(h => Math.max(0, Math.min(255, Math.round(parseInt(h, 16) * f))).toString(16).padStart(2, '0')).join('');
+function avatarSvg(a, cls = '', bust = false) {
   a = cleanAvatar(a);
-  const skin = SKIN[a.skin], hc = HAIRC[a.hairColor], hair = HAIR[a.hair];
-  return `<svg class="avatar ${cls}" ${VB} xmlns="http://www.w3.org/2000/svg">` +
+  const skin = SKIN[a.skin], hc = HAIRC[a.hairColor], hair = HAIR[a.hair], dark = shade(skin, .8);
+  return `<svg class="avatar ${cls}" ${bust ? VB_BUST : VB} xmlns="http://www.w3.org/2000/svg">` +
     BG[a.bg].f() + (hair.b ? hair.b(hc) : '') +
     `<rect x="47" y="128" width="10" height="20" rx="4" fill="#3b3550"/><rect x="63" y="128" width="10" height="20" rx="4" fill="#3b3550"/>` +
     `<ellipse cx="51" cy="150" rx="8" ry="4.5" fill="#2a2430"/><ellipse cx="69" cy="150" rx="8" ry="4.5" fill="#2a2430"/>` +
-    SHIRT[a.shirt].f() + `<circle cx="31" cy="128" r="5.5" fill="${skin}"/><circle cx="89" cy="128" r="5.5" fill="${skin}"/>` +
-    `<circle cx="28" cy="62" r="6" fill="${skin}"/><circle cx="92" cy="62" r="6" fill="${skin}"/><circle cx="60" cy="58" r="32" fill="${skin}"/>` +
-    `<circle cx="40" cy="72" r="4.5" fill="#f08a8a" opacity=".35"/><circle cx="80" cy="72" r="4.5" fill="#f08a8a" opacity=".35"/>` +
-    EYES[a.eyes].f() + MOUTH[a.mouth].f() + hair.f(hc) + MASK[a.mask].f() + GLASSES[a.glasses].f() + HAT[a.hat].f() + FG[a.fg].f() +
+    F('M51 78 L51 99 Q60 103 69 99 L69 78Z', shade(skin, .86)) +
+    SHIRT[a.shirt].f() + F('M60 96 Q83 100 82 136 L60 136Z', '#000', 'opacity=".08"') +
+    `<circle cx="31" cy="128" r="5.5" fill="${skin}"/><circle cx="89" cy="128" r="5.5" fill="${skin}"/>` +
+    `<circle cx="28" cy="62" r="6.5" fill="${skin}"/><circle cx="92" cy="62" r="6.5" fill="${skin}"/>` + S('M26 59 Q30 60 29 65', dark, 1.8) + S('M94 59 Q90 60 91 65', dark, 1.8) +
+    F('M28 56 Q28 24 60 24 Q92 24 92 56 Q92 80 76 87 Q60 93 44 87 Q28 80 28 56Z', skin, `stroke="${dark}" stroke-width="1.2"`) +
+    F('M33 70 Q38 84 52 89 Q41 86 35 78Z', shade(skin, .9)) +
+    `<ellipse cx="40" cy="73" rx="5" ry="3.4" fill="#f08a8a" opacity=".4"/><ellipse cx="80" cy="73" rx="5" ry="3.4" fill="#f08a8a" opacity=".4"/>` +
+    S('M58.5 66 Q60.5 70.5 63 67.5', shade(skin, .68), 2) +
+    EYES[a.eyes].f() + (BROWS[a.eyes] ? '' : S('M42 52 Q48 49 54 52', shade(hc, .8), 2.6) + S('M66 52 Q72 49 78 52', shade(hc, .8), 2.6)) +
+    MOUTH[a.mouth].f() + hair.f(hc) +
+    (NO_SHINE[a.hair] ? '' : `<path d="M40 37 Q50 29 63 30" stroke="${shade(hc, 1.45)}" stroke-width="3.2" fill="none" stroke-linecap="round" opacity=".6"/>`) +
+    MASK[a.mask].f() + GLASSES[a.glasses].f() + HAT[a.hat].f() + FG[a.fg].f() +
     `</svg>`;
 }
-const graveSvg = (key, cls = '') => `<svg class="avatar ${cls}" ${VB}><ellipse cx="60" cy="150" rx="40" ry="6" fill="rgba(0,0,0,.3)"/>${(GRAVE[key] || GRAVE.stone).f()}</svg>`;
+const graveSvg = (key, cls = '', bust = false) => `<svg class="avatar ${cls}" ${bust ? 'viewBox="-6 30 132 132" preserveAspectRatio="xMidYMax meet"' : VB}>${(GRAVE[key] || GRAVE.stone).f()}</svg>`;
 // a single slot item rendered alone, for wardrobe thumbnails
 function itemSvg(slot, key) {
   if (slot === 'grave') return graveSvg(key);

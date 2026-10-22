@@ -1,2 +1,11 @@
 data/
 node_modules/
+.impeccable/.admtok
+.impeccable/review/
+.impeccable/*.js
+.impeccable/*.mjs
+.impeccable/*.css
+.impeccable/*.json
+.impeccable/*.log
+.impeccable/brief-body.md
+.impeccable/questions/
