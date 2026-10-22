@@ -1,0 +1,23 @@
+# Ma Sói on a single VM: the game plus Caddy for free HTTPS. Values come from deploy/.env (written by gcp-setup.sh).
+services:
+  game:
+    build: ..
+    restart: unless-stopped
+    environment:
+      ADMIN_HOST: ${ADMIN_DOMAIN}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+    volumes:
+      - ./data:/app/data   # accounts live here; back up this folder
+  caddy:
+    image: caddy:2.8-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    environment:
+      GAME_DOMAIN: ${GAME_DOMAIN}
+      ADMIN_DOMAIN: ${ADMIN_DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+    depends_on: [game]
+volumes:
+  caddy-data:

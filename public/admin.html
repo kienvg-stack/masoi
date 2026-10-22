@@ -83,7 +83,7 @@ $('login').onsubmit = async e => {
 function start(name) { $('login').classList.add('hidden'); $('app').classList.remove('hidden'); $('who').textContent = name || ''; load(); }
 $('nav').onclick = e => { const t = e.target.dataset.t; if (!t) return; tab = t; [...$('nav').children].forEach(b => b.classList.toggle('on', b.dataset.t === t)); load(); };
 
-const WIN = { village:['Dân làng','#4cc36a'], wolf:['Ma sói','#ef5350'], fool:['Thằng ngốc','#d9a521'], headhunter:['Thợ săn đầu người','#d9a521'], serial_killer:['Sát nhân','#b06ad9'], arsonist:['Phóng hỏa','#ff8a3c'], none:['Không ai','#888'] };
+const WIN = { village:['Dân làng','#4cc36a'], wolf:['Ma sói','#ef5350'], fool:['Thằng ngốc','#d9a521'], headhunter:['Thợ săn đầu người','#d9a521'], serial_killer:['Sát nhân','#b06ad9'], arsonist:['Phóng hỏa','#ff8a3c'], bomber:['Đánh bom','#ff8a3c'], corruptor:['Làm loạn','#b06ad9'], lovers:['Cặp đôi','#ff6fa8'], none:['Không ai','#888'] };
 const date = t => new Date(t).toLocaleString('vi-VN');
 
 async function load() {

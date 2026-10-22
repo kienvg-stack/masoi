@@ -1,0 +1,5 @@
+# Caddy fetches Let's Encrypt certificates for both names on its own
+{$GAME_DOMAIN}, {$ADMIN_DOMAIN} {
+	encode gzip
+	reverse_proxy game:3000
+}

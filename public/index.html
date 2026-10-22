@@ -496,7 +496,7 @@ const ri = role => role ? `<span class="rg t-${ROLES[role].t}" title="${ROLES[ro
 const teamTag = t => `<span class="team t-${t}">${TEAM[t].n}</span>`;
 // server copy still carries emoji; the UI speaks through its own icon set
 const plain = s => String(s ?? '').replace(/[\p{Extended_Pictographic}\u{1F1E6}-\u{1F1FF}️‍]/gu, '').replace(/\s{2,}/g, ' ').trim();
-const WIN = { village:'Dân làng thắng', wolf:'Ma sói thắng', fool:'Thằng ngốc thắng', headhunter:'Thợ săn đầu người thắng', serial_killer:'Sát nhân thắng', arsonist:'Kẻ phóng hỏa thắng', bomber:'Kẻ đánh bom thắng', corruptor:'Kẻ làm loạn thắng', none:'Không ai sống sót' };
+const WIN = { village:'Dân làng thắng', wolf:'Ma sói thắng', fool:'Thằng ngốc thắng', headhunter:'Thợ săn đầu người thắng', serial_killer:'Sát nhân thắng', arsonist:'Kẻ phóng hỏa thắng', bomber:'Kẻ đánh bom thắng', lovers:'Cặp đôi thắng', corruptor:'Kẻ làm loạn thắng', none:'Không ai sống sót' };
 
 // ---------- session / api ----------
 let token = sessionStorage.getItem('ms_t') || localStorage.getItem('ms_t'), ME = null;
@@ -693,7 +693,7 @@ function targetable(p) {
   const me = S.players.find(x => x.id === S.me.id);
   if (mode) {
     const ab = mode.ab;
-    if (ab.dead ? p.alive || (p.role && ROLES[p.role].t !== 'village') : !p.alive) return false;
+    if (ab.dead ? p.alive || (p.role && ROLES[p.role].t !== 'village') : !ab.any && !p.alive) return false;
     if (p.id === S.me.id && !ab.self) return false;
     if (ab.nw && isWolf(p) && isWolf(me)) return false;
     return true;

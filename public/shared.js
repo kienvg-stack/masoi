@@ -8,16 +8,16 @@ const ROLES = {
   villager:      { t: 'village', n: 'Dân làng', i: '🧑‍🌾', d: 'Không có kỹ năng đặc biệt. Dùng lý lẽ để tìm và treo cổ Ma sói.' },
   seer:          { t: 'village', n: 'Tiên tri', i: '🔮', d: 'Mỗi đêm soi 1 người để biết vai trò chính xác của họ.', ab: [{ k: 'see', ph: 'night', n: 1, req: 1 }] },
   aura_seer:     { t: 'village', n: 'Thầy bói hào quang', i: '🌈', d: 'Mỗi đêm xem hào quang 1 người: Tốt (phe dân), Ác (sói) hoặc Không rõ (độc lập).', ab: [{ k: 'aura', ph: 'night', n: 1, req: 1 }] },
-  doctor:        { t: 'village', n: 'Bác sĩ', i: '💉', d: 'Mỗi đêm bảo vệ 1 người (kể cả bản thân) khỏi bị tấn công.', ab: [{ k: 'protect', ph: 'night', n: 1, req: 1, self: 1 }] },
+  doctor:        { t: 'village', n: 'Bác sĩ', i: '💉', d: 'Mỗi đêm bảo vệ 1 người (kể cả bản thân) khỏi bị sói và sát nhân tấn công. Không chặn được lửa, bom và thuốc độc.', ab: [{ k: 'protect', ph: 'night', n: 1, req: 1, self: 1 }] },
   bodyguard:     { t: 'village', n: 'Vệ sĩ', i: '🛡️', d: 'Mỗi đêm canh gác 1 người, nếu họ bị tấn công bạn sẽ đỡ thay. Bạn chịu được 1 đòn đầu tiên.', ab: [{ k: 'guard', ph: 'night', n: 1, req: 1 }] },
-  witch:         { t: 'village', n: 'Phù thủy', i: '🧪', d: 'Có 1 bình cứu người bị sói cắn và 1 bình độc giết 1 người.', ab: [{ k: 'heal', ph: 'night', n: 0, uses: 1, req: 1 }, { k: 'poison', ph: 'night', n: 1, uses: 1, req: 1 }] },
+  witch:         { t: 'village', n: 'Phù thủy', i: '🧪', d: 'Có 1 bình cứu người bị sói cắn và 1 bình độc giết 1 người. Không được dùng bình độc trong đêm đầu tiên.', ab: [{ k: 'heal', ph: 'night', n: 0, uses: 1, req: 1 }, { k: 'poison', ph: 'night', n: 1, uses: 1, req: 1, not1: 1 }] },
   avenger:       { t: 'village', n: 'Kẻ báo thù', i: '⚔️', d: 'Chọn 1 người (đổi được bất cứ lúc nào). Khi bạn chết, người đó chết theo.', ab: [{ k: 'mark', ph: 'any', n: 1 }] },
   gunner:        { t: 'village', n: 'Xạ thủ', i: '🔫', d: 'Ban ngày có thể bắn chết 1 người. Có 2 viên đạn, phát súng đầu tiên sẽ làm lộ thân phận.', ab: [{ k: 'shoot', ph: 'day', n: 1, uses: 2 }] },
   mayor:         { t: 'village', n: 'Thị trưởng', i: '🎩', d: 'Ban ngày có thể công khai thân phận, từ đó phiếu treo cổ của bạn tính x2.', ab: [{ k: 'reveal', ph: 'day', n: 0, uses: 1 }] },
   detective:     { t: 'village', n: 'Thám tử', i: '🕵️', d: 'Mỗi đêm chọn 2 người để biết họ cùng phe hay khác phe.', ab: [{ k: 'compare', ph: 'night', n: 2, req: 1 }] },
   priest:        { t: 'village', n: 'Linh mục', i: '✝️', d: 'Ban ngày ném nước thánh vào 1 người (1 lần). Trúng sói thì sói chết, không thì bạn chết.', ab: [{ k: 'water', ph: 'day', n: 1, uses: 1 }] },
   medium:        { t: 'village', n: 'Đồng cốt', i: '🕯️', d: 'Ban đêm trò chuyện với người chết. Có thể hồi sinh 1 người phe dân đã chết (1 lần).', ab: [{ k: 'revive', ph: 'night', n: 1, uses: 1, dead: 1 }] },
-  cupid:         { t: 'village', n: 'Thần tình yêu', i: '💘', d: 'Đêm đầu ghép đôi 2 người. Nếu 1 người chết, người kia chết theo vì đau khổ.', ab: [{ k: 'link', ph: 'night', n: 2, uses: 1, req: 1, self: 1, n1: 1 }] },
+  cupid:         { t: 'village', n: 'Thần tình yêu', i: '💘', d: 'Đêm đầu ghép đôi 2 người. Nếu 1 người chết, người kia chết theo. Cặp đôi và Thần tình yêu thắng nếu chỉ còn lại họ, hoặc khi Thần tình yêu và cặp đôi còn sống mà chỉ còn 1 người khác.', ab: [{ k: 'link', ph: 'night', n: 2, uses: 1, req: 1, self: 1, n1: 1 }] },
   tough_guy:     { t: 'village', n: 'Gã cứng đầu', i: '💪', d: 'Sống sót qua lần đầu bị sói cắn, nhưng vết thương khiến bạn chết vào cuối ngày hôm sau.' },
   red_lady:      { t: 'village', n: 'Quý cô áo đỏ', i: '💃', d: 'Mỗi đêm đi thăm 1 người nên không bị tấn công tại nhà. Nhưng thăm phải kẻ xấu hoặc người bị tấn công thì bạn chết.', ab: [{ k: 'visit', ph: 'night', n: 1, req: 1 }] },
   loudmouth:     { t: 'village', n: 'Kẻ lắm mồm', i: '📢', d: 'Chọn 1 người. Khi bạn chết, vai trò của người đó bị công khai cho cả làng.', ab: [{ k: 'mark', ph: 'any', n: 1 }] },
@@ -31,7 +31,7 @@ const ROLES = {
   fool:          { t: 'solo', n: 'Thằng ngốc', i: '🃏', d: 'Thắng một mình nếu bị dân làng treo cổ.' },
   headhunter:    { t: 'solo', n: 'Thợ săn đầu người', i: '🎯', d: 'Có 1 mục tiêu bí mật. Thắng nếu mục tiêu bị treo cổ. Mục tiêu chết cách khác thì bạn thành Dân làng.' },
   serial_killer: { t: 'solo', n: 'Sát nhân hàng loạt', i: '🔪', d: 'Mỗi đêm giết 1 người. Miễn nhiễm với sói. Thắng khi là người cuối cùng.', ab: [{ k: 'stab', ph: 'night', n: 1, req: 1 }] },
-  arsonist:      { t: 'solo', n: 'Kẻ phóng hỏa', i: '🔥', d: 'Mỗi đêm tẩm xăng 2 người hoặc châm lửa thiêu chết tất cả người đã bị tẩm. Thắng khi là người cuối cùng.', ab: [{ k: 'douse', ph: 'night', n: 2, req: 1 }, { k: 'ignite', ph: 'night', n: 0, req: 1 }] },
+  arsonist:      { t: 'solo', n: 'Kẻ phóng hỏa', i: '🔥', d: 'Mỗi đêm tẩm xăng 2 người hoặc châm lửa thiêu chết tất cả người đã bị tẩm, xuyên mọi sự bảo vệ. Miễn nhiễm với sói. Thắng khi là người cuối cùng.', ab: [{ k: 'douse', ph: 'night', n: 2, req: 1 }, { k: 'ignite', ph: 'night', n: 0, req: 1 }] },
 };
 
 Object.assign(ROLES, {
@@ -43,8 +43,8 @@ Object.assign(ROLES, {
   spirit_seer:   { t: 'village', n: 'Thầy đồng linh hồn', i: '👁️‍🗨️', d: 'Mỗi đêm chọn 2 người. Sáng hôm sau biết được trong 2 người đó có ai đã giết người đêm qua không.', ab: [{ k: 'spirit', ph: 'night', n: 2, req: 1 }] },
   guardian_wolf: { t: 'wolf', n: 'Sói hộ vệ', i: '🛡️', d: 'Ban ngày bảo vệ 1 con sói khỏi bị treo cổ hôm đó (1 lần).', ab: [{ k: 'kill', ph: 'night', n: 1, req: 1, nw: 1 }, { k: 'save', ph: 'day', n: 1, uses: 1, wo: 1, self: 1 }] },
   kitten_wolf:   { t: 'wolf', n: 'Mèo sói', i: '🐱', d: 'Một lần duy nhất: đêm đó con mồi của bầy sói không chết mà bị biến thành Ma sói (nếu là phe dân).', ab: [{ k: 'kill', ph: 'night', n: 1, req: 1, nw: 1 }, { k: 'convert', ph: 'night', n: 0, uses: 1 }] },
-  bomber:        { t: 'solo', n: 'Kẻ đánh bom', i: '💣', d: 'Mỗi đêm gài bom vào 1 người. Đêm sau bom nổ, giết người đó và 2 người ngồi cạnh. Thắng khi là người cuối cùng.', ab: [{ k: 'bomb', ph: 'night', n: 1, req: 1 }] },
-  corruptor:     { t: 'solo', n: 'Kẻ làm loạn', i: '📡', d: 'Mỗi đêm làm nhiễu 1 người: ngày hôm sau họ không nói, không bỏ phiếu được và chết vào cuối ngày. Thắng khi là người cuối cùng.', ab: [{ k: 'glitch', ph: 'night', n: 1, req: 1 }] },
+  bomber:        { t: 'solo', n: 'Kẻ đánh bom', i: '💣', d: 'Gài bom vào 1 ghế (cả người đã chết). Đêm sau bom nổ, giết người đó và 2 người ngồi cạnh, xuyên mọi sự bảo vệ. Cứ cách 1 đêm gài được 1 quả. Bị treo cổ thì bom không nổ. Miễn nhiễm với sói. Thắng khi là người cuối cùng.', ab: [{ k: 'bomb', ph: 'night', n: 1, req: 1, any: 1 }] },
+  corruptor:     { t: 'solo', n: 'Kẻ làm loạn', i: '📡', d: 'Mỗi đêm làm nhiễu 1 người: ngày hôm sau họ không nói, không bỏ phiếu, không dùng kỹ năng và chết sau buổi bỏ phiếu, vai trò bị giấu. Không làm nhiễu được người đang được bảo vệ. Bạn chết trước đó thì họ thoát. Miễn nhiễm với sói. Thắng khi là người cuối cùng.', ab: [{ k: 'glitch', ph: 'night', n: 1, req: 1 }] },
 });
 
 // ---- custom room setup rules (from the Wolvesville wiki's Custom Games and XP Balanced Game pages) ----

@@ -9,3 +9,5 @@ node_modules/
 .impeccable/*.log
 .impeccable/brief-body.md
 .impeccable/questions/
+deploy/data/
+deploy/.env

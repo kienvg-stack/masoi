@@ -17,7 +17,7 @@ function setup(roles) {
   const r = game.rooms[code];
   r.players.forEach((p, i) => { p.role = roles[i]; p.uses = Object.fromEntries((ROLES[roles[i]].ab || []).filter(a => a.uses).map(a => [a.k, a.uses])); });
   const act = (i, k, ...t) => { try { return game.handle({ action: 'act', code, k, targets: t.map(x => users[x].id) }, users[i]); } catch (e) { throw typeof e === 'string' ? new Error(`${roles[i]} ${k} (${r.phase} ${r.day}): ${e}`) : e; } };
-  const vote = (i, t) => game.handle({ action: 'vote', code, target: users[t].id }, users[i]);
+  const vote = (i, t) => { try { return game.handle({ action: 'vote', code, target: users[t].id }, users[i]); } catch (e) { throw typeof e === 'string' ? new Error(`vote ${i}->${t} (${r.phase} ${r.day}): ${e}`) : e; } };
   const pass = i => game.handle({ action: 'pass', code }, users[i]);
   return { r, act, vote, pass, dead: i => !r.players[i].alive };
 }
@@ -134,21 +134,67 @@ function setup(roles) {
     live.forEach((p, i) => game.handle({ action: 'vote', code: r.code, target: live[(i + 1) % live.length].id }, p));
     if (r.phase === 'vote') { clearTimeout(r.timer); }
     assert.equal(r.phase, 'night');
-    act(0, 'kill', 2); act(3, 'bomb', 7);
+    assert.throws(() => act(3, 'bomb', 7)); // next bomb only after this one went off
+    act(0, 'kill', 2);
     assert(dead(4) && dead(5) && dead(6) && !dead(3));
     assert(r.msgs.some(m => m.to === r.players[3].id && /Hạ gục: số 5 .*số 6 .*số 7/.test(m.text)));
   }
-  // a protected neighbour survives the blast and the bomber is told so
+  // the bomb bypasses the doctor; bombs land on dead seats too; wolves cannot bite the bomber
   {
     const { r, act, pass, dead } = setup(['werewolf', 'villager', 'doctor', 'bomber', 'villager', 'villager', 'villager', 'villager']);
-    act(3, 'bomb', 5); act(0, 'kill', 1); act(2, 'protect', 4);
+    act(0, 'kill', 5); act(2, 'protect', 4); pass(3);
     await sleep(100);
     const live = r.players.filter(p => p.alive);
     live.forEach((p, i) => game.handle({ action: 'vote', code: r.code, target: live[(i + 1) % live.length].id }, p));
-    if (r.phase === 'vote') clearTimeout(r.timer);
-    act(0, 'kill', 7); act(2, 'protect', 4); pass(3);
-    assert(!dead(4) && dead(5) && dead(6));
-    assert(r.msgs.some(m => m.to === r.players[3].id && /số 5 .* được bảo vệ/.test(m.text)));
+    act(3, 'bomb', 5); act(0, 'kill', 3); act(2, 'protect', 4);
+    assert(!dead(3) && !dead(4));
+    await sleep(100);
+    const live2 = r.players.filter(p => p.alive);
+    live2.forEach((p, i) => game.handle({ action: 'vote', code: r.code, target: live2[(i + 1) % live2.length].id }, p));
+    act(0, 'kill', 1); act(2, 'protect', 4);
+    assert(dead(4) && dead(6) && !dead(3));
+  }
+  // a lynched bomber's bomb never goes off
+  {
+    const { r, act, vote, dead } = setup(['werewolf', 'villager', 'villager', 'bomber', 'villager', 'villager', 'villager', 'villager']);
+    act(3, 'bomb', 5); act(0, 'kill', 1);
+    await sleep(100);
+    r.players.filter(p => p.alive).forEach(p => vote(r.players.indexOf(p), p === r.players[3] ? 0 : 3));
+    assert(dead(3));
+    act(0, 'kill', 7);
+    assert(!dead(4) && !dead(5) && !dead(6));
+  }
+  // witch cannot poison on night 1
+  {
+    const { act } = setup(['werewolf', 'witch', ...Array(6).fill('villager')]);
+    assert.throws(() => act(1, 'poison', 4));
+  }
+  // lovers from different teams win together, with their cupid
+  {
+    const { r, act, vote } = setup(['werewolf', 'cupid', 'villager', 'villager', 'werewolf', 'villager', 'villager', 'villager']);
+    act(1, 'link', 0, 2); act(0, 'kill', 7); act(4, 'kill', 7);
+    await sleep(100);
+    [0, 1, 2, 3, 5, 6].forEach(i => vote(i, 4)); vote(4, 3);
+    // alive: wolf 0 + villager 2 (lovers), cupid 1, villagers 3, 5, 6 -> wolves bite down to cupid + couple + 1
+    act(0, 'kill', 3);
+    await sleep(100);
+    [0, 1, 2, 5].forEach(i => vote(i, 6)); vote(6, 5);
+    assert.equal(r.winner, 'lovers');
+    assert(r.players[0].won && r.players[1].won && r.players[2].won && !r.players[5].won);
+  }
+  // corruptor: protected target escapes; glitched role stays hidden; a dead corruptor frees its target
+  {
+    const { r, act, dead } = setup(['werewolf', 'corruptor', 'doctor', ...Array(5).fill('villager')]);
+    act(1, 'glitch', 3); act(2, 'protect', 3); act(0, 'kill', 1);
+    assert(!dead(1) && !r.glitched.has(r.players[3].id));
+  }
+  {
+    const { r, act, dead } = setup(['werewolf', 'corruptor', ...Array(6).fill('villager')]);
+    act(1, 'glitch', 3); act(0, 'kill', 7);
+    await sleep(100);
+    const live = r.players.filter(p => p.alive && p.id !== r.players[3].id);
+    live.forEach((p, i) => game.handle({ action: 'vote', code: r.code, target: live[(i + 1) % live.length].id }, p));
+    assert(dead(3) && game.view(r, r.players[4].id).players[3].role === null);
   }
   // custom room: setup rules and capacity
   {
@@ -315,9 +361,11 @@ function setup(roles) {
     tie(r);
     assert(dead(3));
   }
-  // witch heals the bite and poisons in the same night
+  // witch heals the bite and poisons in the same night (from night 2)
   {
-    const { act, dead } = setup(['werewolf', 'witch', 'seer', 'villager', 'villager', 'villager', 'villager', 'villager']);
+    const { r, act, pass, dead } = setup(['werewolf', 'witch', 'seer', 'villager', 'villager', 'villager', 'villager', 'villager']);
+    act(0, 'kill', 7); pass(1); act(2, 'see', 0);
+    await sleep(100); tie(r);
     act(0, 'kill', 3); act(1, 'heal'); act(1, 'poison', 4); act(2, 'see', 0);
     assert(!dead(3) && dead(4));
   }
