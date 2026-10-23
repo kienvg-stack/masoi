@@ -8,21 +8,23 @@ const ADMIN_HOST = (process.env.ADMIN_HOST || 'admin.localhost').toLowerCase();
 const DATA = process.env.DATA_DIR || path.join(__dirname, 'data'), DB_FILE = path.join(DATA, 'db.json');
 const DAY = 864e5;
 
-// ---------- storage (single JSON file, atomic rename on save) ----------
-let db;
-try { db = JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); } catch { db = {}; }
+// ---------- storage: one JSON file (atomic rename), or one Upstash Redis key on hosts without a disk ----------
+const UP = process.env.UPSTASH_REDIS_REST_URL && { url: process.env.UPSTASH_REDIS_REST_URL, token: process.env.UPSTASH_REDIS_REST_TOKEN, key: 'masoi:db' };
+const upstash = (cmd, body) => fetch(`${UP.url}/${cmd}/${UP.key}`, { method: body ? 'POST' : 'GET', headers: { Authorization: `Bearer ${UP.token}` }, body })
+  .then(r => r.json()).then(j => { if (j.error) throw new Error('Upstash: ' + j.error); return j.result; });
+let db = {};
+if (!UP) try { db = JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); } catch {}
 db = { users: {}, sessions: {}, settings: {}, games: [], ...db };
 let saveTimer;
 function save() {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
+    if (UP) return upstash('set', JSON.stringify(db)).catch(e => console.error('save failed', e.message));
     fs.mkdirSync(DATA, { recursive: true });
     fs.writeFileSync(DB_FILE + '.tmp', JSON.stringify(db));
     fs.renameSync(DB_FILE + '.tmp', DB_FILE);
-  }, 200);
+  }, UP ? 2000 : 200); // remote saves are batched to stay well inside the free command quota
 }
-if (db.settings.v === 2) Object.assign(game.settings.times, db.settings.times || {});
-game.settings.disabled = db.settings.disabled || [];
 
 // ---------- accounts ----------
 const hash = (pw, salt) => crypto.scryptSync(String(pw), salt, 64).toString('hex');
@@ -38,7 +40,11 @@ function createUser(name, password, extra = {}) {
   return db.users[id] = { id, name, salt, hash: hash(password, salt), avatar: AV.cleanAvatar(extra.avatar), stats: { games: 0, wins: 0 }, created: Date.now(), admin: !!extra.admin, banned: false };
 }
 
-if (!Object.values(db.users).some(u => u.admin)) {
+// runs once the stored data is in memory
+function init() {
+  if (db.settings.v === 2) Object.assign(game.settings.times, db.settings.times || {});
+  game.settings.disabled = db.settings.disabled || [];
+  if (Object.values(db.users).some(u => u.admin)) return;
   const pw = process.env.ADMIN_PASSWORD || crypto.randomBytes(9).toString('base64url');
   createUser(findUser('admin') ? 'admin_' + crypto.randomBytes(2).toString('hex') : 'admin', pw, { admin: true });
   fs.mkdirSync(DATA, { recursive: true });
@@ -47,6 +53,7 @@ if (!Object.values(db.users).some(u => u.admin)) {
   console.log(`Đã tạo tài khoản admin — xem data/admin-credentials.txt`);
   save();
 }
+if (!UP) init();
 
 const fails = {}; // ip -> {n, t}: throttle password guessing
 function checkPassword(ip, name, password) {
@@ -237,7 +244,10 @@ const server = http.createServer((req, res) => {
 });
 
 if (require.main === module) {
-  server.listen(PORT, () => console.log(`Ma Sói: http://localhost:${PORT}  |  Admin: http://${ADMIN_HOST}:${PORT}`));
+  // with Upstash, load accounts before serving; a failed read must not start an empty game that overwrites them
+  (UP ? upstash('get').then(s => { if (s) Object.assign(db, JSON.parse(s)); init(); }) : Promise.resolve())
+    .then(() => server.listen(PORT, () => console.log(`Ma Sói: http://localhost:${PORT}  |  Admin: http://${ADMIN_HOST}:${PORT}${UP ? '  |  lưu trên Upstash' : ''}`)))
+    .catch(e => { console.error(e.message); process.exit(1); });
   setInterval(() => {
     for (const r of Object.values(game.rooms)) {
       r.clients.forEach(set => set.forEach(res => res.write(':\n\n'))); // keep SSE alive through proxies
